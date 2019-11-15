@@ -1,14 +1,23 @@
 const ChatComponent = (channel, historyLength) => {
 
-  let nickname = "Default Nickname";
-  const nickEl = document.querySelector('.nickname-input');
-  nickEl.value = nickname;
-  nickEl.addEventListener('keyup', (e) => {
-    nickname = e.target.value;
-  });
-
   const chatEl = document.createElement('div');
   chatEl.classList.add('chat');
+
+  let nickname = "Default Nickname";
+  const nickEl = document.createElement('div');
+  const nickLabelEl = document.createElement('span');
+  nickLabelEl.innerText = "Nickname:";
+  nickEl.appendChild(nickLabelEl);
+
+  const nickInputEl = document.createElement('input');
+  nickInputEl.classList.add('nickname-input');
+  nickInputEl.value = nickname;
+  nickInputEl.addEventListener('keyup', (e) => {
+    nickname = e.target.value;
+  });
+  nickEl.appendChild(nickInputEl);
+
+  chatEl.appendChild(nickEl);
 
   const messageList = document.createElement('div');
   messageList.classList.add('message-list');

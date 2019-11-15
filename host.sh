@@ -23,5 +23,6 @@ hostFile /favicon.ico ./favicon.ico &
 hostFile / ./index.html &
 hostFile /apps/simple_chat ./apps/simple_chat/index.html &
 hostFile /apps/simple_chat/index.js ./apps/simple_chat/index.js &
+hostFile /apps/simple_chat/chat.js ./apps/simple_chat/chat.js &
 
 wait
