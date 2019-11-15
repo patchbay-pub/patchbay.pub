@@ -2,10 +2,40 @@
 
 <html>
   <head>
+    <link rel="stylesheet" type="text/css" href="./chat.css">
+    <style>
+
+      :root {
+              --main-max-width: 500px;
+      }
+
+      main {
+        max-width: var(--main-max-width);
+        margin: 0 auto;
+      }
+
+    </style>
   </head>
 
   <body>
-    <script type='module' src='/apps/simple_chat/index.js'></script>
+    <main>
+      <div class='chat-container'></div>
+    </main>
+
+    <script type='module'>
+
+      import ChatComponent from './chat.js';
+
+      (async () => {
+
+        const historyLength = 200;
+        const channel = 'https://patchbay.pub/pubchat';
+
+        const chatContainerEl = document.querySelector('.chat-container');
+        const chatEl = ChatComponent(channel, historyLength);
+        chatContainerEl.appendChild(chatEl);
+      })();
+    </script>
   </body>
 </html>
 
