@@ -2,8 +2,8 @@
 
 set -x
 
-server=https://patchbay.pub
-token=$1
+server=$1
+token=$2
 
 function hostFile {
         local channel=$1
