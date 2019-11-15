@@ -12,6 +12,10 @@ function hostFile {
         while true
         do
                 curl -X POST -H "Authorization: Bearer $token" $server$channel --data-binary @$path
+
+                if [ "$?" -ne "0" ]; then
+                        sleep 1
+                fi
         done
 }
 
