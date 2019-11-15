@@ -19,6 +19,7 @@ function hostFile {
         done
 }
 
+hostFile /favicon.ico ./favicon.ico &
 hostFile / ./index.html &
 hostFile /apps/simple_chat ./apps/simple_chat/index.html &
 hostFile /apps/simple_chat/index.js ./apps/simple_chat/index.js &
