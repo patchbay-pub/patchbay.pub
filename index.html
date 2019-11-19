@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>patchbay</title>
+    <title>patchbay - Poor man's internet</title>
     <link rel="stylesheet" type="text/css" href="./apps/simple_chat/chat.css">
     <style>
 
@@ -26,7 +26,7 @@
       }
 
       pre {
-        background-color: #ccc;
+        background-color: #ddd;
         overflow-x: scroll;
         font-size: 14px;
       }
@@ -136,7 +136,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
         can model with MPMC queues and pubsub messages over HTTP:
       </p>
 
-      <h2>Desktop notifications</h2>
+      <h2>Poor man's desktop notifications</h2>
 
       <p>
         Here's how my original goal is implemented using patchbay.pub. First,
@@ -180,7 +180,7 @@ do
 done
       </code></pre>
 
-      <h2>Text notifications</h2>
+      <h2>Poor man's SMS notifications</h2>
 
       <p>
         Let's extend the previous example a bit. What if I want to go to lunch,
@@ -234,8 +234,59 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
       <div class='chat-container'></div>
 
       <p>
-        The code is quite simple, and most of it is just UI stuff. Here's
-        the meat of it:
+        The
+        <a target='_blank' href='https://github.com/patchbay-pub/patchbay.pub/tree/master/apps/simple_chat'>code</a>
+        is quite simple, and most of it is just UI stuff. Here's the meat of
+        it:
+      </p>
+
+      <pre><code class='code-block'>
+// Send a message:
+
+const message = JSON.stringify({
+  author: "Default Nickname",
+  text: "Hi there",
+});
+
+fetch('https://patchbay.pub/pubchat?pubsub=true', {
+  method: 'POST',
+  body: `data: ${message}\n\n`,
+});
+
+
+// Receive messages:
+
+const evtSource = new EventSource("https://patchbay.pub/pubchat?mime=text%2Fevent-stream&pubsub=true&persist=true");
+evtSource.onmessage = function(event) {
+  console.log(event.data);
+});
+      </code></pre>
+
+      <p>
+        There are a couple new pieces of the patchbay API shown here. First of
+        all, notice that I'm overriding the Content-Type returned from the
+        server by setting mime=text/event-stream in the GET request. The server
+        will return whatever you specify. I'm also setting persist=true. This
+        keeps the connection open, rather than requiring the client to loop
+        after each message. This is useful for ensuring you don't miss any
+        messages.
+      </p>
+
+      <p>
+        You can also participate with curl using something like the following:
+      </p>
+
+      <pre><code class='code-block'>
+printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl https://patchbay.pub/pubchat?pubsub=true --data-binary @-
+      </code></pre>
+
+      <p>
+        Note that printf is necessary in order to properly pass the newlines
+        to curl, and I'm using --data-binary to prevent curl from stripping
+        whitespace. Also note that this chat system is likely very easy for
+        bad actors to interfere with by sending specific garbage. A real
+        solution would probably need something more sophisticated than SSE,
+        including some sort of client-side filtering.
       </p>
 
       <h2>Poor man's job queue</h2>
@@ -243,7 +294,8 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
       <p>
         What if you had a directory with 1000 MP3s you want to transcode
         without using more than 4 cores on your machine? You could google how
-        to use GNU parallel for the 27th time, or you could run this in one
+        to use GNU parallel for the 27th time (assuming it runs on your
+        operating system), or you could run this in one
         terminal:
       </p>
 
@@ -258,8 +310,9 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
       This entire web site is being hosted over patchbay.pub. How? Because
       static site hosting can be modeled as a MPMC queue, where each file you
       want to host is a producer in a loop, and web browsers create a consumer
-      with each request to a resource. As an example, here's essentially how I'm
-      hosting the index.html for this page (note that it uses the root channel, /):
+      with each request to a resource. As an example, here's essentially how
+      I'm hosting the index.html for the page you're reading (note that it uses
+      the root channel, /):
 
       <pre><code class='code-block'>
 while true; do curl -X POST https://patchbay.pub --data-binary ./index.html; done
@@ -270,7 +323,7 @@ while true; do curl -X POST https://patchbay.pub --data-binary ./index.html; don
       </p>
 
       <pre><code class='code-block'>
-while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data-binary ./apps.simple_chat/chat.js; done
+while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data-binary ./apps/simple_chat/chat.js; done
       </code></pre>
 
       <p>
@@ -294,24 +347,24 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
         reason.
       </p>
 
-      <h2>File sharing</h2>
+      <h2>Poor man's file sharing</h2>
 
       No sketchy web service is complete without the ability to share
       files with your friends. Pubsub messages are restricted in size, because
       each message has to be copied into memory in order to be broadcast.
       producer/consumer streams are under no such limitation. If you post a
       10GB file and send your friend a link, it will be efficiently streamed
-      from your machine, through the patchbay.pub server, to your friend's
+      from your machine, through a patchbay.pub server, to your friend's
       machine. Note that bandwidth is currently quite rate-limited on the free
       server, so I only recommend this for relatively small files. Otherwise
       you'll be waiting a while.
 
 
-      <h1 name='security'>Security</h1>
+      <h1 id='security'>Security</h1>
 
       <p>
         patchbay is designed for simple ad-hoc tasks, with very low friction
-        being a primary goal.  As such, it probably shouldn't be used for an
+        being a primary goal.  As such, it probably shouldn't be used for any
         highly sensitive tasks.  In general, the longer and more random your
         channel id is, the less likely anyone else can guess it or stumble upon
         it. Also note that due to 1) rate limiting and 2) the fact that
