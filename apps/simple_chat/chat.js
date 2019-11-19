@@ -76,7 +76,7 @@ const ChatComponent = (channel, historyLength) => {
   };
 
   const textInput = document.createElement('textarea');
-  textInput.classList.add('.text-input');
+  textInput.classList.add('text-input');
   textInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       if (e.shiftKey) {
