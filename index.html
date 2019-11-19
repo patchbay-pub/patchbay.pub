@@ -153,11 +153,40 @@
 
       <p>
         Let's extend the previous example a bit. What if I want to go to lunch,
-        but still get notified when the job on my server is done?
+        but still get notified when the job on my server is done? The server
+        is already broadcasting a pubsub message, so I don't need to make any
+        changes there. I just need to add a consumer that can notify me on the
+        go. How about using
+        <a target='_blank' href='https://www.twilio.com/'>Twilio</a>
+        to send myself a text message? First I followed the instructions to get
+        the Twilio CLI installed an logged in on my laptop, then it's just a
+        matter of calling it with the body received by the pubsub consumer:
+      </p>
+
+      <pre><code>
+        twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
+      </code></pre>
+
+      <p>
+        Now I'll get a desktop notification, <em>and</em> a text message when
+        the job is done.
       </p>
 
 
       <h2>Webhooks handling</h2>
+
+      Receiving a text notification is useful, but what if I want to
+      <em>send</em> a text and have it trigger some other event? This is easily
+      done by logging in to the Twilio website, and using the console to point
+      the SMS webhook to 
+      <code>https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true</code>.
+
+      Any texts to my number will now trigger a pubsub event on the same
+      channel as before. For some reason Twilio uses URL parameter encoding for
+      its webhook bodies, but it would still be relatively easy to make a
+      script to parse it and get useful data out of it, rather than just an
+      opaque event.
+
       <h2>Custom job queue</h2>
       <h2>Website hosting</h2>
 
