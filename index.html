@@ -6,7 +6,7 @@
     <style>
 
       :root {
-              --main-max-width: 960px;
+              --main-max-width: 720px;
       }
 
       main {
@@ -20,8 +20,152 @@
   <body>
 
     <main>
+      <h1>What is it?</h1>
+
+      <p>
+        A web service that provides an infinite set of virtual
+        channels. Each channel is represented by a URL. Here's an example
+        channel:
+      </p>
+
+      <pre><code>
+        https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
+      </code></pre>
+
+      <p>
+        Generally, a channel is created by randomly generating a string long
+        enough that no one else will guess it. All channels are publicly
+        accessible (see
+        <a href='#security'>Security</a>).
+        Each channel is accessed by HTTP GET and POST requests. Channels can
+        operate in one or both of two modes. By default, a channel models a
+        multi-producer, multi-consumer queue, where GET requests add a
+        consumer, and POSTs add a producer. Consumers will block if there
+        aren't any producers, and producers will block if there aren't any
+        consumers. Anything in a POST body is transmitted over the channel as
+        soon as there is a consumer. 
+      </p>
+
+      <p>
+        Let's try out a trivial example. Note that you should make up your own
+        channel, since other people are likely to use the one below. It doesn't
+        have to be fancy. Just a random 4-digit number (like
+        https://patchbay.pub/4472) is likely fine for testing.
+      </p>
+
+      <p>
+        If you run this GET to create a consumer, it will block:
+      </p>
+
+      <pre><code>
+        curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
+      </code></pre>
+
+      <p>
+        Until you also run this POST in another terminal to create a producer:
+      </p>
+
+      <pre><code>
+        curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
+      </code></pre>
+
+      <p>
+        You can also try reversing the order, and observe that the producer
+        blocks until you run the consumer.
+      </p>
+
+      <p>
+        If you set the <code>pubsub=true</code> query parameter, the request
+        uses the channel in a different mode. GETs act similar to before, but
+        POSTs become non-blocking, and will broadcast messages to ALL
+        consumers, not just the first one. As the name suggest, this models
+        the
+        <a target='_blank' href='https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern'>PubSub pattern</a>.
+      </p>
+
+      <h1>Cute; how is this useful?</h1>
+
+      <p>
+        I originally created patchbay because I wanted an easy way to get a
+        desktop notification on my laptop when a long-running job on a server I
+        was SSH'd into finished. After a bit of experimenting I realized a
+        small amount of additional features would go a long way to making a
+        more generally useful tool. This morphed into the question:
+      </p>
+
+      <p>
+        "What is the 20% of
+        <a target='_blank' href='https://ifttt.com/'>IFTTT</a>
+        functionality I would have to implement to have 80% of IFTTT features
+        that I would personally use?"
+      </p>
+
+      <p>
+        So, with that brief motivation, here are a few examples of things you
+        can model with MPMC queues and pubsub messages over HTTP:
+      </p>
+
+      <h2>Desktop notifications</h2>
+
+      <p>
+        Here's how my original goal is implemented using patchbay.pub. First,
+        on my remote server:
+      </p>
+
+      <pre><code>
+        ./longjob.sh; curl -X POST https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true
+      </code></pre>
+
+      <p>
+        And on my Linux laptop with
+        <a target='_blank' href='https://wiki.archlinux.org/index.php/Desktop_notifications'>desktop notifications</a>
+        support:
+      </p>
+
+      <pre><code>
+        curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true; notify-send "Job done"
+      </code></pre>
+
+      <p>
+        That's it. I'll get a popup on my screen when the job is done. If I
+        want to get real fancy I can run the receiver in a loop. I keep the
+        following script running in the background ready to receive
+        notifications from whatever producers I want, printing out the HTTP
+        body from the producer:
+      </p>
+
+      <pre><code>
+        #!/bin/bash
+
+        while true
+        do
+            # Run curl in a subshell and pass the results to notify-send
+            notify-send $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
+
+            # Avoid too many requests if server is down or rejecting
+            if [ "$?" -ne "0" ]; then
+                sleep 1
+            fi
+        done
+      </code></pre>
+
+      <h2>Text notifications</h2>
+
+      <p>
+        Let's extend the previous example a bit. What if I want to go to lunch,
+        but still get notified when the job on my server is done?
+      </p>
+
+
+      <h2>Webhooks handling</h2>
+      <h2>Custom job queue</h2>
+      <h2>Website hosting</h2>
+
+
       <a href="./apps/simple_chat/" target="_blank">Open chat in tab</a>
       <div class='chat-container'></div>
+
+      <h1 name='security'>Security</h1>
     </main>
 
     <script type='module'>
