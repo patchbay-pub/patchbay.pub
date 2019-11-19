@@ -2,16 +2,43 @@
 
 <html>
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>patchbay</title>
     <link rel="stylesheet" type="text/css" href="./apps/simple_chat/chat.css">
     <style>
 
       :root {
-              --main-max-width: 720px;
+              --main-max-width: 640px;
       }
 
       main {
         max-width: var(--main-max-width);
         margin: 0 auto;
+        font-family: Arial;
+        font-size: 18px;
+        line-height: 1.4;
+      }
+
+      code {
+        font-family: Courier New, monospace;
+        font-weight: bold;
+      }
+
+      pre {
+        background-color: #ccc;
+        overflow-x: scroll;
+        font-size: 14px;
+      }
+
+      .code-block {
+        padding-left: 20px;
+        display: inline-block;
+      }
+
+      .emphasized {
+        font-size: 22px;
+        font-weight: bold;
       }
 
     </style>
@@ -28,8 +55,8 @@
         channel:
       </p>
 
-      <pre><code>
-        https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
+      <pre><code class='code-block'>
+https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
       </code></pre>
 
       <p>
@@ -57,16 +84,16 @@
         If you run this GET to create a consumer, it will block:
       </p>
 
-      <pre><code>
-        curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
+      <pre><code class='code-block'>
+curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
       </code></pre>
 
       <p>
         Until you also run this POST in another terminal to create a producer:
       </p>
 
-      <pre><code>
-        curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
+      <pre><code class='code-block'>
+curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
       </code></pre>
 
       <p>
@@ -93,7 +120,7 @@
         This morphed into the following question:
       </p>
 
-      <p>
+      <p class='emphasized'>
         "What is the 20% of
         <a target='_blank' href='https://ifttt.com/'>IFTTT</a>
         functionality I could implement to have 80% of IFTTT features that I
@@ -116,8 +143,8 @@
         on my remote server:
       </p>
 
-      <pre><code>
-        ./longjob.sh; curl -X POST https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true
+      <pre><code class='code-block'>
+./longjob.sh; curl -X POST https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true
       </code></pre>
 
       <p>
@@ -126,8 +153,8 @@
         support:
       </p>
 
-      <pre><code>
-        curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true; notify-send "Job done"
+      <pre><code class='code-block'>
+curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true; notify-send "Job done"
       </code></pre>
 
       <p>
@@ -138,19 +165,19 @@
         body from the producer:
       </p>
 
-      <pre><code>
-        #!/bin/bash
+      <pre><code class='code-block'>
+#!/bin/bash
 
-        while true
-        do
-            # Run curl in a subshell and pass the results to notify-send
-            notify-send $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
+while true
+do
+    # Run curl in a subshell and pass the results to notify-send
+    notify-send $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
 
-            # Avoid too many requests if server is down or rejecting
-            if [ "$?" -ne "0" ]; then
-                sleep 1
-            fi
-        done
+    # Avoid too many requests if server is down or rejecting
+    if [ "$?" -ne "0" ]; then
+        sleep 1
+    fi
+done
       </code></pre>
 
       <h2>Text notifications</h2>
@@ -167,8 +194,8 @@
         matter of calling it with the body received by the pubsub consumer:
       </p>
 
-      <pre><code>
-        twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
+      <pre><code class='code-block'>
+twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
       </code></pre>
 
       <p>
@@ -177,7 +204,7 @@
       </p>
 
 
-      <h2>Webhooks handling</h2>
+      <h2>Poor man's webhooks</h2>
 
       Receiving a text notification is useful, but what if I want to
       <em>send</em> a text and have it trigger some other event? This is easily
@@ -197,7 +224,7 @@
         How about an ad-hoc chat app? This chat includes everyone currently
         visiting this page. It doesn't require any fancy WebRTC or WebSockets;
         just HTTP. It's implemented using the
-        <a target='_blank' href='https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events'>server-sent events API</a>.
+        <a target='_blank' href='https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events'>server-sent events protocol</a>.
         Instead of the events being generated on the server, they originate
         from peer producers and are broadcast to all consumers. If there's no
         one else around, try opening it in another tab and talking to yourself.
@@ -211,9 +238,20 @@
         the meat of it:
       </p>
 
-      <h2>Custom job queue</h2>
+      <h2>Poor man's job queue</h2>
 
-      <h2>Website hosting</h2>
+      <p>
+        What if you had a directory with 1000 MP3s you want to transcode
+        without using more than 4 cores on your machine? You could google how
+        to use GNU parallel for the 27th time, or you could run this in one
+        terminal:
+      </p>
+
+      <p>
+        And this in 4 others:
+      </p>
+
+      <h2>Poor man's web hosting</h2>
 
       Time to get funky. You may be wondering why MPMC queue is the default
       mode, since all the examples have used pubsub=true. Here's why.
@@ -223,16 +261,16 @@
       with each request to a resource. As an example, here's essentially how I'm
       hosting the index.html for this page (note that it uses the root channel, /):
 
-      <pre><code>
-        while true; do curl -X POST https://patchbay.pub --data-binary ./index.html; done
+      <pre><code class='code-block'>
+while true; do curl -X POST https://patchbay.pub --data-binary ./index.html; done
       </code></pre>
 
       <p>
         And chat.js:
       </p>
 
-      <pre><code>
-        while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data-binary ./apps.simple_chat/chat.js; done
+      <pre><code class='code-block'>
+while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data-binary ./apps.simple_chat/chat.js; done
       </code></pre>
 
       <p>
