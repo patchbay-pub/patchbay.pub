@@ -55,7 +55,7 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
         accessible; see
         <a href='#security'>Security</a>),
         and then sending HTTP requests to it. The channel above was generated
-        by your browser when you loaded the page. Channels don't have to be
+        by your browser when you loaded this page. Channels don't have to be
         explicitly created before use.  Channels can operate in one or both of
         two modes. By default, a channel models a multi-producer,
         multi-consumer (MPMC) queue, where GET requests add a consumer, and
@@ -88,10 +88,17 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       </p>
 
       <p>
-        If you set the <code>pubsub=true</code> query parameter, the request
-        uses the channel in a different mode. GETs act similar to before, but
-        POSTs become non-blocking, and will broadcast messages to ALL
-        consumers, not just the first one. As the name suggest, this models
+        If you set the <code>pubsub=true</code> query parameter, like this:
+      </p>
+
+      <pre><code class='bash'>
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true -d "Hi there"
+      </code></pre>
+
+      <p>
+        the request uses the channel in a different mode. GETs act similar to
+        before, but POSTs become non-blocking, and will broadcast messages to
+        ALL consumers, not just the first one. As the name suggest, this models
         the
         <a target='_blank' href='https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern'>PubSub pattern</a>.
       </p>
@@ -100,10 +107,10 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
 
       <p>
         I originally wanted an easy way to get a desktop notification on my
-        laptop when a long-running job on a server I was SSH'd into finished.
-        After a bit of experimenting I realized a small amount of additional
-        features would go a long way to making a more generally useful tool.
-        This morphed into the following question:
+        laptop when a long-running job on my server completed.  After a bit of
+        experimenting I realized a small amount of additional features would go
+        a long way to making a more generally useful tool.  This evolved into
+        the following question:
       </p>
 
       <p class='emphasized'>
@@ -144,11 +151,13 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       </code></pre>
 
       <p>
-        That's it. I'll get a popup on my screen when the job is done. If I
-        want to get real fancy I can re-run the consumer in a loop. I keep the
-        following script running in the background ready to receive
-        notifications from whatever producers I want, printing out the HTTP
-        body from the producer:
+        That's it. I'll get a popup on my screen when the job is done. (Note
+        that MacOS has
+        <a target='_blank' href='https://apple.stackexchange.com/a/115373'>similar functionality</a>
+        built-in.) If I want to get real fancy I can re-run the consumer in a
+        loop. I keep the following script running in the background ready to
+        receive notifications from whatever producers I want, printing out the
+        HTTP body from the producer:
       </p>
 
       <pre><code class='bash'>
@@ -186,16 +195,17 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
 
       <p>
         Now I'll get a desktop notification, <em>and</em> a text message when
-        the job is done.
+        the job is done. If you don't want to pay for texts, you can do 
+        something similar with any messaging app that offers an API.
       </p>
 
 
       <h2>Poor man's webhooks</h2>
 
       Receiving a text notification is useful, but what if I want to
-      <em>send</em> a text and have it trigger some other event? This is easily
-      done by logging in to the Twilio website, and using the console to point
-      the SMS webhook to 
+      <em>send</em> a text to my Twilio number and have it trigger some other
+      event? This is easily done by logging in to the Twilio website and
+      pointing the SMS webhook to 
       <code>https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true</code>.
 
       Any texts to my number will now trigger a pubsub event on the same
@@ -209,7 +219,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
         visiting this page, using the https://patchbay.pub/pubchat channel. It
         doesn't require any fancy WebRTC or WebSockets; just HTTP. It's
         implemented using the
-        <a target='_blank' href='https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events'>server-sent events protocol</a>.
+        <a target='_blank' href='https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events'>server-sent events (SSE) protocol</a>.
         Instead of the events being generated on the server, they originate
         from peer producers and are broadcast to all consumers. If there's no
         one else around, try opening it in another tab and talking to yourself.
@@ -250,10 +260,11 @@ evtSource.onmessage = function(event) {
       <p>
         There are a couple new pieces of the patchbay API shown here. First of
         all, notice that I'm overriding the Content-Type returned from the
-        server by setting mime=text/event-stream in the GET request. The server
-        will return whatever you specify. I'm also setting persist=true. This
-        keeps the connection open, rather than requiring the client to loop
-        after each message. This is useful for ensuring you don't miss any
+        server by setting mime=text/event-stream in the GET request. This is
+        necessary to make the browser use the SSE protocol. The server will
+        return whatever you specify. I'm also setting persist=true. This keeps
+        the connection open, rather than requiring the client to loop after
+        each message. This is useful for ensuring you don't miss any
         messages.
       </p>
 
@@ -269,7 +280,7 @@ printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl http
         Note that printf is necessary in order to properly pass the newlines
         to curl, and I'm using --data-binary to prevent curl from stripping
         whitespace. Also note that this chat system is very easy for
-        bad actors to interfere with by sending bad messages. A real
+        bad actors to interfere with by sending crafted messages. A real
         solution would probably need something more sophisticated than SSE,
         including some sort of client-side filtering.
       </p>
@@ -284,14 +295,48 @@ printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl http
         terminal:
       </p>
 
+      <pre><code class='bash'>
+#!/bin/bash
+
+# IFS determines what to split on. By default it will split on spaces. Change
+# it to newlines
+# See https://www.cyberciti.biz/tips/handling-filenames-with-spaces-in-bash.html
+ifsbak=$IFS
+IFS=$(echo -en "\n\b")
+
+for filename in *.mp3
+do
+        curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> -d $filename
+done
+
+# Need to restore IFS to its previous value
+IFS=$ifsbak
+      </code></pre>
+
       <p>
         And this in 4 others:
       </p>
 
+      <pre><code class='bash'>
+#!/bin/bash
+
+while true
+do
+        filename=$(curl -s https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>)
+        if [ "$filename" != "Too Many Requests" ]
+        then
+                echo $filename
+                ffmpeg -i "$filename" "$filename.ogg"
+        else
+                sleep 1
+        fi
+done
+      </code></pre>
+
       <h2>Poor man's web hosting</h2>
 
       Time to get funky. You may be wondering why MPMC queue is the default
-      mode, since all the examples have used pubsub=true. Here's why.
+      mode, since most of the examples have used pubsub=true. Here's why.
       This entire web site is being hosted over patchbay.pub. How? Because
       static site hosting can be modeled as a MPMC queue, where each file you
       want to host is a producer in a loop, and web browsers create a consumer
@@ -358,9 +403,11 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
         being a primary goal.  As such, it probably shouldn't be used for any
         highly sensitive data.  In general, the longer and more random your
         channel id is, the less likely anyone else can guess it or stumble upon
-        it. Also note that due to 1) rate limiting and 2) the fact that
-        requests block by default, brute forcing probably isn't a viable attack
-        strategy for channel ids of even moderate length.
+        it. You'll probably want to user longer ids than the one generated for
+        these examples. Maybe a UUID or something. Also note that due to 1)
+        rate limiting and 2) the fact that requests block by default, brute
+        forcing probably isn't a viable attack strategy for channel ids of even
+        moderate length.
       </p>
 
       <h1 name='privacy'>Privacy</h1>
