@@ -46,7 +46,7 @@
       </p>
 
       <pre><code class='plaintext'>
-https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
+https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
       </code></pre>
 
       <p>
@@ -54,7 +54,8 @@ https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
         enough that no one else will guess it (all channels are publicly
         accessible; see
         <a href='#security'>Security</a>),
-        and then sending HTTP requests to it. Channels don't have to be
+        and then sending HTTP requests to it. The channel above was generated
+        by your browser when you loaded the page. Channels don't have to be
         explicitly created before use.  Channels can operate in one or both of
         two modes. By default, a channel models a multi-producer,
         multi-consumer (MPMC) queue, where GET requests add a consumer, and
@@ -76,7 +77,7 @@ https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
       </p>
 
       <pre><code class='bash'>
-curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
       </code></pre>
 
       <p>
@@ -84,7 +85,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
       </p>
 
       <pre><code class='bash'>
-curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> -d "Hi there"
       </code></pre>
 
       <p>
@@ -135,7 +136,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
       </p>
 
       <pre><code class='bash'>
-./longjob.sh; curl -X POST https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true
+./longjob.sh; curl -X POST https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true
       </code></pre>
 
       <p>
@@ -145,7 +146,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
       </p>
 
       <pre><code class='bash'>
-curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true; notify-send "Job done"
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true; notify-send "Job done"
       </code></pre>
 
       <p>
@@ -162,7 +163,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true; noti
 while true
 do
     # Run curl in a subshell and pass the results to notify-send
-    notify-send $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
+    notify-send $(curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true)
 
     # Avoid too many requests if server is down or rejecting
     if [ "$?" -ne "0" ]; then
@@ -186,7 +187,7 @@ done
       </p>
 
       <pre><code class='bash'>
-twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
+twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true)
       </code></pre>
 
       <p>
@@ -201,7 +202,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
       <em>send</em> a text and have it trigger some other event? This is easily
       done by logging in to the Twilio website, and using the console to point
       the SMS webhook to 
-      <code>https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true</code>.
+      <code>https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true</code>.
 
       Any texts to my number will now trigger a pubsub event on the same
       channel as before. I can use whatever command line tools I want to
@@ -394,8 +395,33 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
         const chatContainerEl = document.querySelector('.chat-container');
         const chatEl = ChatComponent(channel, historyLength);
         chatContainerEl.appendChild(chatEl);
+
+        const ids = document.querySelectorAll('.channel');
+        const randId = genId();
+        ids.forEach(el => el.innerText = randId);
         hljs.initHighlightingOnLoad();
       })();
+
+      function genId() {
+        const possible = "0123456789abcdefghijkmnpqrstuvwxyz";
+
+        function genCluster() {
+          let cluster = "";
+          for (let i = 0; i < 4; i++) {
+            const randIndex = Math.floor(Math.random() * possible.length);
+            cluster += possible[randIndex];
+          }
+          return cluster;
+        }
+
+        let id = "";
+        id += genCluster();
+        id += '-';
+        id += genCluster();
+        return id;
+      }
+
+
     </script>
   </body>
 </html>
