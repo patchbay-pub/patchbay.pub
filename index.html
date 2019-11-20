@@ -385,28 +385,29 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
 
       <h2>Poor man's file sharing</h2>
 
-      No sketchy web service is complete without the ability to share
-      files with your friends. Pubsub messages are restricted in size, because
-      each message has to be copied into memory in order to be broadcast.
-      MPMC streams are under no such limitation. If you POST a
-      10GB file and send your friend a link, it will be efficiently streamed
-      from your machine, through a patchbay.pub server, to your friend's
-      machine. Note that bandwidth is currently quite rate-limited on the free
-      server, so I only recommend this for relatively small files. Otherwise
-      you'll be waiting a while.
+      No sketchy web service is complete without the ability to share files.
+      Pubsub messages are restricted in size, because each message has to be
+      copied into memory in order to be broadcast.  MPMC streams are under no
+      such limitation. If you POST a 10GB file and send your friend a link, it
+      will be efficiently streamed from your machine, through a patchbay.pub
+      server, to your friend's machine. Note that bandwidth is currently quite
+      rate-limited on the free server, so I only recommend this for relatively
+      small files. Otherwise you'll be waiting a while.
 
 
       <h1 id='security'>Security</h1>
 
       <p>
         patchbay is designed for simple ad-hoc tasks, with very low friction
-        being a primary goal.  As such, it probably shouldn't be used for any
-        highly sensitive data.  In general, the longer and more random your
-        channel id is, the less likely anyone else can guess it or stumble upon
-        it. You'll probably want to user longer ids than the one generated for
-        these examples. Maybe a UUID or something. Also note that due to 1)
-        rate limiting and 2) the fact that requests block by default, brute
-        forcing probably isn't a viable attack strategy for channel ids of even
+        being a primary goal.  Having to juggle auth tokens and logins runs
+        counter to these aims. As such, it probably shouldn't be used for any
+        highly sensitive data.  That said, I think it's secure enough for many
+        uses. In general, the longer and more random your channel id is, the
+        less likely anyone else can guess it or stumble upon it. You'll
+        probably want to user longer ids than the one generated for these
+        examples. Maybe a UUID or something. Also note that due to 1) rate
+        limiting and 2) the fact that requests block by default, brute forcing
+        probably isn't a viable attack strategy for channel ids of even
         moderate length.
       </p>
 
