@@ -66,14 +66,8 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
       </p>
 
       <p>
-        Let's try out a trivial example. Note that you should make up your own
-        channel, since other people are likely to use the one below. It doesn't
-        have to be fancy. Just a random 6-digit number (like
-        https://patchbay.pub/447219) is likely fine for testing.
-      </p>
-
-      <p>
-        If you run this GET to create a consumer, it will block:
+        Let's try out a trivial example. If you run this GET to create a
+        consumer, it will block:
       </p>
 
       <pre><code class='bash'>
@@ -206,10 +200,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
 
       Any texts to my number will now trigger a pubsub event on the same
       channel as before. I can use whatever command line tools I want to
-      process the webhook. For some reason Twilio uses URL parameter encoding
-      for its webhook bodies, but it would still be relatively easy to make a
-      script to parse it and get useful data out of it, rather than just an
-      opaque event.
+      process the webhook.
 
       <h2>Poor man's IRC</h2>
 
@@ -277,8 +268,8 @@ printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl http
       <p>
         Note that printf is necessary in order to properly pass the newlines
         to curl, and I'm using --data-binary to prevent curl from stripping
-        whitespace. Also note that this chat system is likely very easy for
-        bad actors to interfere with by sending specific garbage. A real
+        whitespace. Also note that this chat system is very easy for
+        bad actors to interfere with by sending bad messages. A real
         solution would probably need something more sophisticated than SSE,
         including some sort of client-side filtering.
       </p>
@@ -321,8 +312,8 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
       </code></pre>
 
       <p>
-        Again, there's nothing special about channel ids. Any valid URL path
-        will do. In this case the channel ids carry extra semantic information
+        There's nothing special about channel ids. Any valid URL path will do.
+        In this case the channel ids carry extra semantic information
         corresponding to a HTTP resource location, but as far as the server is
         concerned, apps/simple_chat/chat.js is just a bunch of characters
         forming an id.
@@ -368,7 +359,7 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
         highly sensitive data.  In general, the longer and more random your
         channel id is, the less likely anyone else can guess it or stumble upon
         it. Also note that due to 1) rate limiting and 2) the fact that
-        requests block by default, brute forcing is not a viable attack
+        requests block by default, brute forcing probably isn't a viable attack
         strategy for channel ids of even moderate length.
       </p>
 
