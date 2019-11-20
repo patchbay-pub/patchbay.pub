@@ -4,8 +4,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>patchbay - Poor man's internet</title>
+    <title>patchbay - Poor man's web</title>
     <link rel="stylesheet" type="text/css" href="./apps/simple_chat/chat.css">
+    <link rel="stylesheet"
+          href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/atelier-sulphurpool-dark.min.css">
     <style>
 
       :root {
@@ -20,20 +22,8 @@
         line-height: 1.4;
       }
 
-      code {
-        font-family: Courier New, monospace;
-        font-weight: bold;
-      }
-
       pre {
-        background-color: #ddd;
-        overflow-x: scroll;
         font-size: 14px;
-      }
-
-      .code-block {
-        padding-left: 20px;
-        display: inline-block;
       }
 
       .emphasized {
@@ -50,12 +40,12 @@
       <h1>What is it?</h1>
 
       <p>
-        A web service that provides an infinite set of virtual HTTP "channels"
-        anyone can use for free. Each channel is represented by a URL. Here's
-        an example channel:
+        A web service that provides an infinite number of virtual HTTP
+        "channels" anyone can use for free. Each channel is represented by a
+        URL. Here's an example channel:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='plaintext'>
 https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
       </code></pre>
 
@@ -64,15 +54,14 @@ https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
         enough that no one else will guess it (all channels are publicly
         accessible; see
         <a href='#security'>Security</a>),
-        and then sending HTTP requests
-        to it. Channels don't have to be explicitly created before use.
-        Each channel is accessed by HTTP GET and POST requests. Channels can
-        operate in one or both of two modes. By default, a channel models a
-        multi-producer, multi-consumer (MPMC) queue, where GET requests add a
-        consumer, and POSTs add a producer. Consumers will block if there
-        aren't any producers, and producers will block if there aren't any
-        consumers. Anything in a POST body is transmitted over the channel as
-        soon as there is a consumer. 
+        and then sending HTTP requests to it. Channels don't have to be
+        explicitly created before use.  Channels can operate in one or both of
+        two modes. By default, a channel models a multi-producer,
+        multi-consumer (MPMC) queue, where GET requests add a consumer, and
+        POSTs add a producer. Consumers will block if there aren't any
+        producers, and producers will block if there aren't any consumers.
+        Anything in a POST body is transmitted over the channel as soon as
+        there is a consumer. 
       </p>
 
       <p>
@@ -86,7 +75,7 @@ https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
         If you run this GET to create a consumer, it will block:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
       </code></pre>
 
@@ -94,7 +83,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344
         Until you also run this POST in another terminal to create a producer:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
       </code></pre>
 
@@ -145,7 +134,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
         on my remote server:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 ./longjob.sh; curl -X POST https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true
       </code></pre>
 
@@ -155,7 +144,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344 -d "Hi there"
         support:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true; notify-send "Job done"
       </code></pre>
 
@@ -167,7 +156,7 @@ curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true; noti
         body from the producer:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 #!/bin/bash
 
 while true
@@ -196,7 +185,7 @@ done
         matter of calling it with the body received by the pubsub consumer:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/aa7cc811-d21c-42ef-92cc-a5566fa38344?pubsub=true)
       </code></pre>
 
@@ -244,7 +233,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
         it:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='javascript'>
 // Send a message:
 
 const message = JSON.stringify({
@@ -280,7 +269,7 @@ evtSource.onmessage = function(event) {
         You can also participate with curl using something like the following:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl https://patchbay.pub/pubchat?pubsub=true --data-binary @-
       </code></pre>
 
@@ -318,7 +307,7 @@ printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl http
       I'm hosting the index.html for the page you're reading (note that it uses
       the root channel, /):
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 while true; do curl -X POST https://patchbay.pub --data-binary ./index.html; done
       </code></pre>
 
@@ -326,7 +315,7 @@ while true; do curl -X POST https://patchbay.pub --data-binary ./index.html; don
         And chat.js:
       </p>
 
-      <pre><code class='code-block'>
+      <pre><code class='bash'>
 while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data-binary ./apps/simple_chat/chat.js; done
       </code></pre>
 
@@ -362,7 +351,7 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
       No sketchy web service is complete without the ability to share
       files with your friends. Pubsub messages are restricted in size, because
       each message has to be copied into memory in order to be broadcast.
-      producer/consumer streams are under no such limitation. If you post a
+      MPMC streams are under no such limitation. If you POST a
       10GB file and send your friend a link, it will be efficiently streamed
       from your machine, through a patchbay.pub server, to your friend's
       machine. Note that bandwidth is currently quite rate-limited on the free
@@ -375,7 +364,7 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
       <p>
         patchbay is designed for simple ad-hoc tasks, with very low friction
         being a primary goal.  As such, it probably shouldn't be used for any
-        highly sensitive tasks.  In general, the longer and more random your
+        highly sensitive data.  In general, the longer and more random your
         channel id is, the less likely anyone else can guess it or stumble upon
         it. Also note that due to 1) rate limiting and 2) the fact that
         requests block by default, brute forcing is not a viable attack
@@ -391,6 +380,7 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
       <h1>Caveats</h1>
     </main>
 
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
     <script type='module'>
 
       import ChatComponent from './apps/simple_chat/chat.js';
@@ -404,6 +394,7 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
         const chatContainerEl = document.querySelector('.chat-container');
         const chatEl = ChatComponent(channel, historyLength);
         chatContainerEl.appendChild(chatEl);
+        hljs.initHighlightingOnLoad();
       })();
     </script>
   </body>
