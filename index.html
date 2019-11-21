@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>patchbay - Poor man's web</title>
+    <title>patchbay - connect anything</title>
     <link rel="stylesheet" type="text/css" href="./apps/simple_chat/chat.css">
     <link rel="stylesheet"
           href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/atelier-sulphurpool-dark.min.css">
@@ -55,14 +55,15 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
         accessible; see
         <a href='#security'>Security</a>),
         and then sending HTTP requests to it. The channel above was generated
-        by your browser when you loaded this page. Channels don't have to be
-        explicitly created before use.  Channels can operate in one or both of
-        two modes. By default, a channel models a multi-producer,
-        multi-consumer (MPMC) queue, where GET requests add a consumer, and
-        POSTs add a producer. Consumers will block if there aren't any
-        producers, and producers will block if there aren't any consumers.  As
-        soon as a producer gets matched with a consumer, anything in the
-        producer's HTTP body is streamed over the channel to the consumer. 
+        by your browser when you loaded this page, and should be fine to use
+        for running the examples. Channels don't have to be explicitly created
+        before use.  Channels can operate in one or both of two modes. By
+        default, a channel models a multi-producer, multi-consumer (MPMC)
+        queue, where GET requests add a consumer, and POSTs add a producer.
+        Consumers will block if there aren't any producers, and producers will
+        block if there aren't any consumers.  As soon as a producer gets
+        matched with a consumer, anything in the producer's HTTP body is
+        streamed over the channel to the consumer. 
       </p>
 
       <p>
@@ -176,6 +177,22 @@ do
     fi
 done
       </code></pre>
+
+      <p>
+        It's also possible to use a GET request to create a producer. This is
+        done by using the <code>method</code> and <code>body</code> query
+        parameters, like this:
+      </p>
+
+      <pre><code class='bash'>
+curl "https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true&method=post&body=Job%20Done"
+      </code></pre>
+
+      <p>
+        This is useful if you want to do something like send a signal from a
+        mobile browser, where you only have access to the address bar. I like
+        to create mobile browser shortcuts for triggering different things.
+      </p>
 
       <h2>Poor man's SMS notifications</h2>
 
@@ -455,6 +472,25 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
       </p>
 
       <h1>Caveats</h1>
+
+      <ul>
+        <li>
+          Due to the way TCP works, it can be tricky to detect when an HTTP
+          client has disconnected. So if you connect a producer and then
+          cancel it, the server might keep it around for a while before
+          cleaning it up, and a consumer might grab the stale/partial data.
+          The simplest way to handle these situations is to flush it manually
+          by attaching a consumer as soon as you cancel the producer.
+        </li>
+        <li>
+          In general, your code needs to assume the connection can fail at any
+          time without having transferred any data. Additionally, even if some or all of a
+          producer body is read from the request, that doesn't guarantee it's
+          been delivered to a consumer. It might just be in a buffer. That
+          said, the server should never close a connection until a consumer
+          has attached.
+        </li>
+      </ul>
     </main>
 
     <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
