@@ -37,7 +37,7 @@
   <body>
 
     <main>
-      <h1>What is it?</h1>
+      <h1>What is this?</h1>
 
       <p>
         A web service that provides an infinite number of virtual HTTP
@@ -60,9 +60,9 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
         two modes. By default, a channel models a multi-producer,
         multi-consumer (MPMC) queue, where GET requests add a consumer, and
         POSTs add a producer. Consumers will block if there aren't any
-        producers, and producers will block if there aren't any consumers.
-        Anything in a POST body is transmitted over the channel as soon as
-        there is a consumer. 
+        producers, and producers will block if there aren't any consumers.  As
+        soon as a producer gets matched with a consumer, anything in the
+        producer's HTTP body is streamed over the channel to the consumer. 
       </p>
 
       <p>
@@ -84,7 +84,9 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
 
       <p>
         You can also try reversing the order, and observe that the producer
-        blocks until you run the consumer.
+        blocks until you run the consumer. If you start 2 producers at the
+        same time, you'll have to run the consumer twice in order to unblock
+        both of them.
       </p>
 
       <p>
@@ -103,7 +105,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
         <a target='_blank' href='https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern'>PubSub pattern</a>.
       </p>
 
-      <h1>Cute. How is this useful?</h1>
+      <h1>Cute. How is it useful?</h1>
 
       <p>
         I originally wanted an easy way to get a desktop notification on my
@@ -126,7 +128,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
 
       <p>
         So, with that brief motivation, here are a few examples of things you
-        can model with MPMC queues and pubsub messages over HTTP:
+        can implement with MPMC queues and pubsub messages over HTTP:
       </p>
 
       <h2>Poor man's desktop notifications</h2>
@@ -153,7 +155,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       <p>
         That's it. I'll get a popup on my screen when the job is done. (Note
         that MacOS has
-        <a target='_blank' href='https://apple.stackexchange.com/a/115373'>similar functionality</a>
+        <a target='_blank' href='https://apple.stackexchange.com/a/115373'>notification functionality</a>
         built-in.) If I want to get real fancy I can re-run the consumer in a
         loop. I keep the following script running in the background ready to
         receive notifications from whatever producers I want, printing out the
@@ -184,9 +186,11 @@ done
         changes there. I just need to add a consumer that can notify me on the
         go. How about using
         <a target='_blank' href='https://www.twilio.com/'>Twilio</a>
-        to send myself a text message? First I followed the instructions to get
-        the Twilio CLI installed and logged in on my laptop, then it's just a
-        matter of calling it with the body received by the pubsub consumer:
+        to send myself a text message? First I followed
+        <a target='_blank' href='https://www.twilio.com/docs/twilio-cli/quickstart'>the instructions</a>
+        to get the Twilio CLI installed and logged in on my laptop, then it's
+        just a matter of calling it with the body received by the pubsub
+        consumer:
       </p>
 
       <pre><code class='bash'>
@@ -263,9 +267,8 @@ evtSource.onmessage = function(event) {
         server by setting mime=text/event-stream in the GET request. This is
         necessary to make the browser use the SSE protocol. The server will
         return whatever you specify. I'm also setting persist=true. This keeps
-        the connection open, rather than requiring the client to loop after
-        each message. This is useful for ensuring you don't miss any
-        messages.
+        the consumer connection open, rather than requiring it to loop after
+        each message. This is useful for ensuring no messages are missed.
       </p>
 
       <p>
@@ -333,19 +336,20 @@ do
 done
       </code></pre>
 
+      <p>
+        The work will be evenly distributed across the consumer workers,
+        without using more than 4 cores at a time.
+      </p>
+
       <h2>Poor man's web hosting</h2>
 
-      Time to get funky. You may be wondering why MPMC queue is the default
-      mode, since most of the examples have used pubsub=true. Here's why.
-      This entire web site is being hosted over patchbay.pub. How? Because
-      static site hosting can be modeled as a MPMC queue, where each file you
-      want to host is a producer in a loop, and web browsers create a consumer
-      with each request to a resource. As an example, here's essentially how
-      I'm hosting the index.html for the page you're reading (note that it uses
-      the root channel, /):
+      Time to get funky. This entire web site is being hosted over a
+      patchbay.pub channel. How? This is essentially how I'm hosting the
+      index.html for the page you're reading (note that it uses the root
+      channel, /):
 
       <pre><code class='bash'>
-while true; do curl -X POST https://patchbay.pub --data-binary ./index.html; done
+while true; do curl -X POST https://patchbay.pub/ --data-binary ./index.html; done
       </code></pre>
 
       <p>
@@ -355,6 +359,14 @@ while true; do curl -X POST https://patchbay.pub --data-binary ./index.html; don
       <pre><code class='bash'>
 while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data-binary ./apps/simple_chat/chat.js; done
       </code></pre>
+
+      <p>
+        This works because static site hosting can be modeled as a MPMC queue,
+        where each file you want to host is a producer in a loop, and web
+        browsers create a consumer with each request to a resource. You can
+        also assign multiple producers to each hosted file for poor man's
+        load balancing.
+      </p>
 
       <p>
         There's nothing special about channel ids. Any valid URL path will do.
@@ -375,12 +387,6 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
         <a target='_blank' href='https://ngrok.com/'>ngrok</a>) are much more likely.
         But feel free to reach out if you want a "vanity channel" for some
         reason.
-      </p>
-
-      <p>
-        Defaulting to the MPMC model means we don't have to specify anything
-        like pubsub=true in the URL, which keeps the URLs cleaner for web
-        hosting.
       </p>
 
       <h2>Poor man's file sharing</h2>
