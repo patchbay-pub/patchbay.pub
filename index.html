@@ -87,7 +87,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
         You can also try reversing the order, and observe that the producer
         blocks until you run the consumer. If you start 2 producers at the
         same time, you'll have to run the consumer twice in order to unblock
-        both of them.
+        both of them, one after the other.
       </p>
 
       <p>
@@ -101,8 +101,8 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       <p>
         the request uses the channel in a different mode. GETs act similar to
         before, but POSTs become non-blocking, and will broadcast messages to
-        ALL consumers, not just the first one. As the name suggest, this models
-        the
+        all blocked consumers, not just the first one. As the name suggest,
+        this models the
         <a target='_blank' href='https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern'>PubSub pattern</a>.
       </p>
 
@@ -111,13 +111,15 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       <p>
         I originally wanted an easy way to get a desktop notification on my
         laptop when a long-running job on my server completed.  After a bit of
-        experimenting I realized a small amount of additional features would go
-        a long way to making a more generally useful tool.  This evolved into
-        the following question:
+        experimenting I realized a small amount of additional features would
+        result in a more generally useful tool.  This evolved into the
+        following question:
       </p>
 
       <p class='emphasized'>
-        "What is the 20% of
+        "What is the
+        <a target='_blank' href='https://en.wikipedia.org/wiki/Pareto_principle'>20%</a>
+        of
         <a target='_blank' href='https://ifttt.com/'>IFTTT</a>
         functionality I could implement to have 80% of IFTTT features that I
         would personally use?"
@@ -125,6 +127,14 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
 
       <p>
         patchbay is what I ended up with.
+      </p>
+
+      <p class='emphasized'>
+        The entire philosophy of patchbay is that all the logic is done on your
+        local machine[s], typically with a simple shell snippet. The server
+        exists only for you to connect
+        ("<a target='_blank' href='https://en.wikipedia.org/wiki/Patch_panel'>patch</a>")
+        different components together.
       </p>
 
       <p>
@@ -311,7 +321,7 @@ printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl http
         What if you had a directory with 1000 MP3s you want to transcode
         without using more than 4 cores on your machine? You could google how
         to use GNU parallel for the 27th time (assuming it runs on your
-        operating system), or you could run this in one
+        operating system), or you could run something like this in one
         terminal:
       </p>
 
