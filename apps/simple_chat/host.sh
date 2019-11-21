@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 server=$1
 token=$2

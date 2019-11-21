@@ -1,9 +1,13 @@
 #!/bin/bash
 
-set -x
+#set -x
 
-server=$1
-token=$2
+rootChannel=$1
+token="dummytoken"
+if [ $2 ]
+then
+        token=$2
+fi
 
 # kill all child processes on exit
 trap 'kill $(jobs -p)' EXIT
@@ -14,7 +18,7 @@ function hostFile {
 
         while true
         do
-                curl -X POST -H "Authorization: Bearer $token" $server$channel --data-binary @$path 1>>./logs${channel}_stdout 2>>./logs${channel}_stderr
+                curl -X POST -H "Authorization: Bearer $token" $rootChannel$channel --data-binary @$path 1>>./logs${channel}_stdout 2>>./logs${channel}_stderr
 
                 if [ "$?" -ne "0" ]; then
                         sleep 1
@@ -25,6 +29,6 @@ function hostFile {
 hostFile /favicon.ico ./favicon.ico &
 hostFile / ./index.html &
 
-./apps/simple_chat/host.sh $server $token /apps/simple_chat &
+./apps/simple_chat/host.sh $rootChannel $token /apps/simple_chat &
 
 wait
