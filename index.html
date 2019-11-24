@@ -131,7 +131,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
 
       <p class='emphasized'>
         The entire philosophy of patchbay is that all the logic is done on your
-        local machine[s], typically with a simple shell snippet. The server
+        local machine[s], typically with simple shell snippets. The server
         exists only for you to connect
         ("<a target='_blank' href='https://en.wikipedia.org/wiki/Patch_panel'>patch</a>")
         different components together.
@@ -494,11 +494,11 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
         </li>
         <li>
           In general, your code needs to assume the connection can fail at any
-          time without having transferred any data. Additionally, even if some or all of a
-          producer body is read from the request, that doesn't guarantee it's
-          been delivered to a consumer. It might just be in a buffer. That
-          said, the server should never close a connection until a consumer
-          has attached.
+          time without having transferred any data. Additionally, even if some
+          or all of a producer body is read from the request, that doesn't
+          guarantee it's been delivered to a consumer. It might just be in an
+          OS buffer. That said, the server should never close a producer
+          connection until a consumer has attached.
         </li>
       </ul>
     </main>
