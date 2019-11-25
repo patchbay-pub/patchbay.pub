@@ -13,8 +13,22 @@ trap 'kill $(jobs -p)' EXIT
 scriptPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 function hostFile {
+        local channel=$1
+        local path=$2
+
+        for workerId in {1..4}
+        do
+                echo "Starting worker $workerId for $path"
+                hostFileWorker $channel $path $workerId &
+        done
+
+        wait
+}
+
+function hostFileWorker {
         local channel=$rootChannel$1
         local path=$scriptPath/$2
+        local workerId=$3
 
         while true
         do

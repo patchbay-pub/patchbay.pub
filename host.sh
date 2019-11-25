@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -x
+set -x
 
 rootChannel=$1
 token="dummytoken"
@@ -16,6 +16,20 @@ function hostFile {
         local channel=$1
         local path=$2
 
+        for workerId in {1..8}
+        do
+                echo "Starting worker $workerId for $path at $rootChannel$channel"
+                hostFileWorker $channel $path $workerId &
+        done
+
+        wait
+}
+
+function hostFileWorker {
+        local channel=$1
+        local path=$2
+        local workerId=$3
+
         while true
         do
                 curl -X POST -H "Authorization: Bearer $token" $rootChannel$channel --data-binary @$path 1>>./logs${channel}_stdout 2>>./logs${channel}_stderr
@@ -25,6 +39,7 @@ function hostFile {
                 fi
         done
 }
+
 
 hostFile /favicon.ico ./favicon.ico &
 hostFile / ./index.html &
