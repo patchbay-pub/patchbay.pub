@@ -24,6 +24,7 @@
 
       pre {
         font-size: 14px;
+        overflow-x: auto;
       }
 
       .emphasized {
@@ -37,12 +38,61 @@
   <body>
 
     <main>
-      <h1>What is this?</h1>
+
+      <h1>TL;DR</h1>
+      <p>
+        patchbay.pub is a free web service you can use to implement things like
+        <a href='#static-hosting'>static site hosting</a>,
+        <a href='#file-sharing'>file sharing</a>,
+        <a href='#notifications'>cross-platform notifications</a>,
+        <a href='#webhooks'>webhooks handling</a>,
+        smart home event routing, IoT reporting,
+        <a href='#job-queues'>job queues</a>,
+        <a href='#chat-systems'>chat systems</a>, bots,
+        etc, all completely serverless and requiring no account creation or
+        authentication. Most implementations need nothing but curl and simple
+        bash snippets.
+      </p>
+
+      <h1>Why did you make this?</h1>
 
       <p>
-        A web service that provides an infinite number of virtual HTTP
-        "channels" anyone can use for free. Each channel is represented by a
-        URL. Here's an example channel:
+        I originally wanted an easy way to get a notification on my laptop when
+        a long-running job on my server completed.  After a bit of
+        experimenting I decided a small amount of additional features would
+        result in a more generally useful tool.  This evolved into the
+        following question:
+      </p>
+
+      <p class='emphasized'>
+        "What is the
+        <a target='_blank' href='https://en.wikipedia.org/wiki/Pareto_principle'>20%</a>
+        of
+        <a target='_blank' href='https://ifttt.com/'>IFTTT</a>
+        functionality I could implement to have 80% of IFTTT features that I
+        would personally use?"
+      </p>
+
+      <p>
+        patchbay is what I ended up with.
+      </p>
+
+      <p class='emphasized'>
+        The entire philosophy of patchbay is that all the logic is done on your
+        local machine[s], typically with small shell snippets. The server
+        exists only for you to connect
+        ("<a target='_blank' href='https://en.wikipedia.org/wiki/Patch_panel'>patch</a>")
+        different components together.
+      </p>
+
+
+
+      <h1>How is it implemented?</h1>
+
+      <p>
+        patchbay provides an infinite number of virtual HTTP "channels" anyone
+        can use. Each channel is represented by a URL. Here's an
+        example channel:
       </p>
 
       <pre><code class='plaintext'>
@@ -50,7 +100,7 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
       </code></pre>
 
       <p>
-        Generally, a channel is used by randomly generating a string long
+        Generally, a channel is chosen by randomly generating a string long
         enough that no one else will guess it (all channels are publicly
         accessible; see
         <a href='#security'>Security</a>),
@@ -67,8 +117,8 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
       </p>
 
       <p>
-        Let's try out a trivial example. If you run this GET to create a
-        consumer, it will block:
+        Enough theory; let's try out a trivial example. If you run this GET to
+        create a consumer, it will block:
       </p>
 
       <pre><code class='bash'>
@@ -101,52 +151,23 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       <p>
         the request uses the channel in a different mode. GETs act similar to
         before, but POSTs become non-blocking, and will broadcast messages to
-        all blocked consumers, not just the first one. As the name suggest,
-        this models the
+        all blocked pubsub consumers, not just the first one. As the name
+        suggest, this models the
         <a target='_blank' href='https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern'>PubSub pattern</a>.
       </p>
 
-      <h1>Cute. How is it useful?</h1>
-
       <p>
-        I originally wanted an easy way to get a desktop notification on my
-        laptop when a long-running job on my server completed.  After a bit of
-        experimenting I realized a small amount of additional features would
-        result in a more generally useful tool.  This evolved into the
-        following question:
-      </p>
-
-      <p class='emphasized'>
-        "What is the
-        <a target='_blank' href='https://en.wikipedia.org/wiki/Pareto_principle'>20%</a>
-        of
-        <a target='_blank' href='https://ifttt.com/'>IFTTT</a>
-        functionality I could implement to have 80% of IFTTT features that I
-        would personally use?"
-      </p>
-
-      <p>
-        patchbay is what I ended up with.
-      </p>
-
-      <p class='emphasized'>
-        The entire philosophy of patchbay is that all the logic is done on your
-        local machine[s], typically with simple shell snippets. The server
-        exists only for you to connect
-        ("<a target='_blank' href='https://en.wikipedia.org/wiki/Patch_panel'>patch</a>")
-        different components together.
-      </p>
-
-      <p>
-        So, with that brief motivation, here are a few examples of things you
+        So, with that brief introduction, here are a few examples of things you
         can implement with MPMC queues and pubsub messages over HTTP:
       </p>
 
-      <h2>Poor man's desktop notifications</h2>
+
+
+      <h2 id='notifications'>Poor man's desktop notifications</h2>
 
       <p>
-        Here's how my original goal is implemented using patchbay.pub. First,
-        on my remote server:
+        Here's how my original goal can be implemented using patchbay.pub.
+        First, on my remote server:
       </p>
 
       <pre><code class='bash'>
@@ -169,7 +190,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
         <a target='_blank' href='https://apple.stackexchange.com/a/115373'>notification functionality</a>
         built-in.) If I want to get real fancy I can re-run the consumer in a
         loop. I keep the following script running in the background ready to
-        receive notifications from whatever producers I want, printing out the
+        receive notifications from whatever producers I want, displaying the
         HTTP body from the producer:
       </p>
 
@@ -204,7 +225,7 @@ curl "https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa
         to create mobile browser shortcuts for triggering different things.
       </p>
 
-      <h2>Poor man's SMS notifications</h2>
+      <h2 id='notifications'>Poor man's SMS notifications</h2>
 
       <p>
         Let's extend the previous example a bit. What if I want to go to lunch,
@@ -231,7 +252,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
       </p>
 
 
-      <h2>Poor man's webhooks</h2>
+      <h2 id='webhooks'>Poor man's webhooks</h2>
 
       Receiving a text notification is useful, but what if I want to
       <em>send</em> a text to my Twilio number and have it trigger some other
@@ -243,7 +264,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
       channel as before. I can use whatever command line tools I want to
       process the webhook.
 
-      <h2>Poor man's IRC</h2>
+      <h2 id='chat-systems'>Poor man's IRC</h2>
 
       <p>
         How about an ad-hoc chat app? This chat includes everyone currently
@@ -315,7 +336,7 @@ printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl http
         including some sort of client-side filtering.
       </p>
 
-      <h2>Poor man's job queue</h2>
+      <h2 id='job-queues'>Poor man's job queue</h2>
 
       <p>
         What if you had a directory with 1000 MP3s you want to transcode
@@ -368,7 +389,7 @@ done
         without using more than 4 cores at a time.
       </p>
 
-      <h2>Poor man's web hosting</h2>
+      <h2 id='static-hosting'>Poor man's web hosting</h2>
 
       Time to get funky. This entire web site is being hosted over a
       patchbay.pub channel. How? This is essentially how I'm hosting the
@@ -388,7 +409,7 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
       </code></pre>
 
       <p>
-        That's right; this site is literally being served by bash (that's not
+        That's right; I'm advocating bash as your next web server! (that's not
         something I ever thought I'd write). This works because static site
         hosting can be modeled as a MPMC queue, where each file you want to
         host is a producer in a loop, and web browsers create a consumer with
@@ -419,8 +440,8 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
 
       <p>
         Just because you can't host something on the root channel, doesn't mean
-        you can't host it somewhere else. The actual script that hosts this
-        site is <code>host.sh</code> in
+        you can't host it somewhere else on patchbay.pub. There's a
+        <code>host.sh</code> script in
         <a target='_blank' href='https://github.com/patchbay-pub/patchbay.pub'>the repo</a>).
         You can host your own copy of this site on your own channel by
         cloning the repo and running this command:
@@ -431,8 +452,8 @@ while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data
       </code></pre>
 
       <p>
-        Then point your browser here (make sure to include the trailing slash,
-        since the host.sh script appends it):
+        Then point your browser here (make sure to include the trailing slash;
+        it's required for relative browser imports to work):
       </p>
 
       <pre><code class='bash'>
@@ -447,7 +468,19 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
         producers that are still blocked waiting for consumers of the old code.
       </p>
 
-      <h2>Poor man's file sharing</h2>
+      <p>
+        I'm working on a more robust
+        <a target='_blank' href='https://github.com/patchbay-pub/patchbay-cli'>CLI tool</a>,
+        which will turn common use cases like hosting a static site with many
+        files into a one liner (rather than having to manually write something
+        like host.sh yourself):
+      </p>
+
+      <pre><code class='bash'>
+patchbay-cli host https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> ./dir/to/host
+      </code></pre>
+
+      <h2 id='file-sharing'>Poor man's file sharing</h2>
 
       No sketchy web service is complete without the ability to share files.
       Pubsub messages are restricted in size, because each message has to be
@@ -478,12 +511,21 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
       <h1 name='privacy'>Privacy</h1>
       <p>
         We don't look at anyone's data as it goes through our servers, but
-        you can also use end-to-end encyption if you don't trust us.
+        you can also use end-to-end encryption if you don't trust us.
       </p>
 
       <h1>Caveats</h1>
 
       <ul>
+        <li>
+          The goal is to keep patchbay free for everyone to use for projects of
+          a reasonable size. However, it's obviously necessary to implement
+          request rate and bandwidth limits. If there's enough interest, I'll
+          probably spin out a product of some sort for high-load use cases.
+          Feel free to reach out at
+          <a href="mailto:info@patchbay.pub">info@patchbay.pub</a>
+          if you have any thoughts.
+        </li>
         <li>
           Due to the way TCP works, it can be tricky to detect when an HTTP
           client has disconnected. So if you connect a producer and then
@@ -498,7 +540,8 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
           or all of a producer body is read from the request, that doesn't
           guarantee it's been delivered to a consumer. It might just be in an
           OS buffer. That said, the server should never close a producer
-          connection until a consumer has attached.
+          connection until a consumer has attached and all data has been read
+          from the producer.
         </li>
       </ul>
     </main>
