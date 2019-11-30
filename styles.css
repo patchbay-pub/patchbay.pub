@@ -8,7 +8,7 @@ nav {
   margin-bottom: 20px;
 }
 
-body {
+.content {
   max-width: var(--main-max-width);
   margin: 0 auto;
   font-family: Arial;
