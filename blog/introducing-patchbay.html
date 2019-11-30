@@ -8,25 +8,32 @@
     
     <!-- tuplate_end() -->
     <title>patchbay - connect anything</title>
-    <link rel="stylesheet" type="text/css" href="./styles.css">
-    <link rel="stylesheet" type="text/css" href="./apps/simple_chat/chat.css">
+    <link rel="stylesheet" type="text/css" href="../styles.css">
+    <link rel="stylesheet" type="text/css" href="../apps/simple_chat/chat.css">
     <link rel="stylesheet"
           href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/atelier-sulphurpool-dark.min.css">
   </head>
 
   <body>
 
-    <!-- tuplate_start(header.html) -->
+    <!-- tuplate_start(header_level2.html) -->
     <header>
       <nav>
-        <a href='./'>Home</a>
-        <a href='./blog/'>Blog</a>
+        <a href='../'>Home</a>
+        <a href='../blog/'>Blog</a>
       </nav>
     </header>
     
     <!-- tuplate_end() -->
 
     <main>
+      <h1>Update 2019-11-30</h1>
+
+      This introductory post for patchbay uses the old version of the API,
+      currently available at
+      <a href='https://og.patchbay.pub'>og.patchbay.pub</a>.
+      See the home page for the latest.
+
       <h1>TL;DR</h1>
       <p>
         patchbay.pub is a free web service you can use to implement things like
@@ -563,7 +570,7 @@ patchbay-cli host https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-
     <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
     <script type='module'>
 
-      import ChatComponent from './apps/simple_chat/chat.js';
+      import ChatComponent from '../apps/simple_chat/chat.js';
 
       (async () => {
 

@@ -1,0 +1,31 @@
+:root {
+        --main-max-width: 640px;
+}
+
+nav {
+  font-size: 1.6em;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+body {
+  max-width: var(--main-max-width);
+  margin: 0 auto;
+  font-family: Arial;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+pre {
+  font-size: 14px;
+  overflow-x: auto;
+}
+
+.emphasized {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.blog-list {
+  font-size: 28px;
+}
