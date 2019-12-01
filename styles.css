@@ -29,3 +29,14 @@ pre {
 .blog-list {
   font-size: 28px;
 }
+
+.video-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+video {
+  width: 100%;
+}
