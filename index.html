@@ -305,7 +305,7 @@ fetch('https://patchbay.pub/pubchat?pubsub=true', {
 const evtSource = new EventSource("https://patchbay.pub/pubchat?mime=text%2Fevent-stream&pubsub=true&persist=true");
 evtSource.onmessage = function(event) {
   console.log(event.data);
-});
+}
       </code></pre>
 
       <p>
