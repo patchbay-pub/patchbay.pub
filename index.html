@@ -5,9 +5,8 @@
     <!-- tuplate_start(head.html) -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>patchbay - connect anything</title>
+    <title>patchbay - Poor Man's Web</title>
     <!-- tuplate_end() -->
-    <title>patchbay - connect anything</title>
     <link rel="stylesheet" type="text/css" href="./styles.css">
     <link rel="stylesheet" type="text/css" href="./apps/simple_chat/chat.css">
     <link rel="stylesheet"
@@ -15,7 +14,6 @@
   </head>
 
   <body>
-
     <div class='content'>
 
     <!-- tuplate_start(header.html) -->
@@ -28,10 +26,12 @@
     <!-- tuplate_end() -->
 
     <main>
+
       <h1>TL;DR</h1>
       <p>
         patchbay.pub is a free web service you can use to implement things like
         <a href='#static-hosting'>static site hosting</a>,
+        <a href='#serverless'>dynamic site hosting</a>,
         <a href='#file-sharing'>file sharing</a>,
         <a href='#notifications'>cross-platform notifications</a>,
         <a href='#webhooks'>webhooks handling</a>,
@@ -98,53 +98,34 @@ https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344<
         for running the examples. Channels don't have to be explicitly created
         before use.  Channels can operate in one or both of two modes. By
         default, a channel models a multi-producer, multi-consumer (MPMC)
-        queue, where an HTTP request by default adds a consumer, and adds a
-        producer if the query parameter `responder=true` is set.
+        queue, where GET requests add a consumer, and POSTs add a producer.
         Consumers will block if there aren't any producers, and producers will
         block if there aren't any consumers.  As soon as a producer gets
-        matched with a consumer, data is transfered and both processes
-        unblock.
+        matched with a consumer, anything in the producer's HTTP body is
+        streamed over the channel to the consumer. 
       </p>
 
       <p>
-        Now, I said it is a MPMC queue, but it's actually more general (and
-        powerful) than that. It can be very useful for consumers to transfer
-        data to the producer before the producer provides the data. For
-        example, what if the consumer only needs a specific portion of a file?
-        patchbay has functionality to support this. In reality, it implements a
-        multi-<em>requester</em>/multi-<em>responder</em> queue. It could also
-        be called multi-client/multi-server, but I found that confusing to work
-        with, because both requesters and responders are clients of the
-        patchbay.pub server itself.
-      </p>
-
-      <p>
-        Anyway, even though it's more powerful, I'll continue to refer to the
-        system as a MPMC queue, because that's how it behaves in the simple
-        case.
-      </p>
-
-      <p>
-        Enough theory; let's try out a trivial example. If you run this command 
-        to create a requester, it will block:
+        Enough theory; let's try out a trivial example. If you run this GET to
+        create a consumer, it will block:
       </p>
 
       <pre><code class='bash'>
-curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
       </code></pre>
 
       <p>
-        Until you also run this command in another terminal to create a responder:
+        Until you also run this POST in another terminal to create a producer:
       </p>
 
       <pre><code class='bash'>
-curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?responder=true -d "Hi there"
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> -d "Hi there"
       </code></pre>
 
       <p>
-        You can also try reversing the order, and observe that the responder 
-        blocks until you run the requester. If you start 2 responders at the
-        same time, you'll have to run the requester twice in order to unblock
+        You can also try reversing the order, and observe that the producer
+        blocks until you run the consumer. If you start 2 producers at the
+        same time, you'll have to run the consumer twice in order to unblock
         both of them, one after the other.
       </p>
 
@@ -153,14 +134,14 @@ curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a55
       </p>
 
       <pre><code class='bash'>
-curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true -d "Hi there"
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true -d "Hi there"
       </code></pre>
 
       <p>
-        the request uses the channel in a different mode. HTTP GET requests are
-        used to subscribe to messages on the channel, and HTTP POST requests
-        will broadcast messages on the channel, to all blocked subscribers, not
-        just the first one. As the name suggest, this models the
+        the request uses the channel in a different mode. GETs act similar to
+        before, but POSTs become non-blocking, and will broadcast messages to
+        all blocked pubsub consumers, not just the first one. As the name
+        suggest, this models the
         <a target='_blank' href='https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern'>PubSub pattern</a>.
       </p>
 
@@ -179,7 +160,7 @@ curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a55
       </p>
 
       <pre><code class='bash'>
-./longjob.sh; curl -X POST https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true -d "Done"
+./longjob.sh; curl -X POST https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true
       </code></pre>
 
       <p>
@@ -189,7 +170,7 @@ curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a55
       </p>
 
       <pre><code class='bash'>
-curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true; notify-send "Job done"
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true; notify-send "Job done"
       </code></pre>
 
       <p>
@@ -208,7 +189,7 @@ curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a55
 while true
 do
     # Run curl in a subshell and pass the results to notify-send
-    notify-send $(curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true)
+    notify-send $(curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true)
 
     # Avoid too many requests if server is down or rejecting
     if [ "$?" -ne "0" ]; then
@@ -218,13 +199,13 @@ done
       </code></pre>
 
       <p>
-        It's also possible to use a GET request to send pubsub messages. This
-        is done by using the <code>method</code> and <code>body</code> query
+        It's also possible to use a GET request to create a producer. This is
+        done by using the <code>method</code> and <code>body</code> query
         parameters, like this:
       </p>
 
       <pre><code class='bash'>
-curl "https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true&method=post&body=Job%20Done"
+curl "https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true&method=post&body=Job%20Done"
       </code></pre>
 
       <p>
@@ -237,20 +218,20 @@ curl "https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5
 
       <p>
         Let's extend the previous example a bit. What if I want to go to lunch,
-        but still get notified when the job on my server is done? The server is
-        already broadcasting a pubsub message, so I don't need to make any
-        changes there. I just need to add a subscriber that can notify me on
-        the go. How about using
+        but still get notified when the job on my server is done? The server
+        is already broadcasting a pubsub message, so I don't need to make any
+        changes there. I just need to add a consumer that can notify me on the
+        go. How about using
         <a target='_blank' href='https://www.twilio.com/'>Twilio</a>
         to send myself a text message? First I followed
         <a target='_blank' href='https://www.twilio.com/docs/twilio-cli/quickstart'>the instructions</a>
         to get the Twilio CLI installed and logged in on my laptop, then it's
         just a matter of calling it with the body received by the pubsub
-        subscriber:
+        consumer:
       </p>
 
       <pre><code class='bash'>
-twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true)
+twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true)
       </code></pre>
 
       <p>
@@ -266,7 +247,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
       <em>send</em> a text to my Twilio number and have it trigger some other
       event? This is easily done by logging in to the Twilio website and
       pointing the SMS webhook to 
-      <code>https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true</code>.
+      <code>https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true</code>.
 
       Any texts to my number will now trigger a pubsub event on the same
       channel as before. I can use whatever command line tools I want to
@@ -276,7 +257,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
 
       <p>
         How about an ad-hoc chat app? This chat includes everyone currently
-        visiting this page, using the https://beta.patchbay.pub/pubchat channel. It
+        visiting this page, using the https://patchbay.pub/pubchat channel. It
         doesn't require any fancy WebRTC or WebSockets; just HTTP. It's
         implemented using the
         <a target='_blank' href='https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events'>server-sent events (SSE) protocol</a>.
@@ -303,7 +284,7 @@ const message = JSON.stringify({
   text: "Hi there",
 });
 
-fetch('https://beta.patchbay.pub/pubchat?pubsub=true', {
+fetch('https://patchbay.pub/pubchat?pubsub=true', {
   method: 'POST',
   body: `data: ${message}\n\n`,
 });
@@ -311,7 +292,7 @@ fetch('https://beta.patchbay.pub/pubchat?pubsub=true', {
 
 // Receive messages:
 
-const evtSource = new EventSource("https://beta.patchbay.pub/pubchat?mime=text%2Fevent-stream&pubsub=true&persist=true");
+const evtSource = new EventSource("https://patchbay.pub/pubchat?mime=text%2Fevent-stream&pubsub=true&persist=true");
 evtSource.onmessage = function(event) {
   console.log(event.data);
 });
@@ -332,7 +313,7 @@ evtSource.onmessage = function(event) {
       </p>
 
       <pre><code class='bash'>
-printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl https://beta.patchbay.pub/pubchat?pubsub=true --data-binary @-
+printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl https://patchbay.pub/pubchat?pubsub=true --data-binary @-
       </code></pre>
 
       <p>
@@ -365,7 +346,7 @@ IFS=$(echo -en "\n\b")
 
 for filename in *.mp3
 do
-        curl https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> -d $filename
+        curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> -d $filename
 done
 
 # Need to restore IFS to its previous value
@@ -381,7 +362,7 @@ IFS=$ifsbak
 
 while true
 do
-        filename=$(curl -s https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>)
+        filename=$(curl -s https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>)
         if [ "$filename" != "Too Many Requests" ]
         then
                 echo $filename
@@ -397,7 +378,7 @@ done
         without using more than 4 cores at a time.
       </p>
 
-      <h2 id='static-hosting'>Poor man's static site hosting</h2>
+      <h2 id='static-hosting'>Poor man's web hosting</h2>
 
       Time to get funky. This entire web site is being hosted over a
       patchbay.pub channel. How? This is essentially how I'm hosting the
@@ -405,7 +386,7 @@ done
       channel, /):
 
       <pre><code class='bash'>
-while true; do curl -X POST https://beta.patchbay.pub/ --data-binary ./index.html; done
+while true; do curl -X POST https://patchbay.pub/ --data-binary ./index.html; done
       </code></pre>
 
       <p>
@@ -413,7 +394,7 @@ while true; do curl -X POST https://beta.patchbay.pub/ --data-binary ./index.htm
       </p>
 
       <pre><code class='bash'>
-while true; do curl -X POST https://beta.patchbay.pub/apps/simple_chat/chat.js --data-binary ./apps/simple_chat/chat.js; done
+while true; do curl -X POST https://patchbay.pub/apps/simple_chat/chat.js --data-binary ./apps/simple_chat/chat.js; done
       </code></pre>
 
       <p>
@@ -456,7 +437,7 @@ while true; do curl -X POST https://beta.patchbay.pub/apps/simple_chat/chat.js -
       </p>
 
       <pre><code class='bash'>
-./host.sh https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+./host.sh https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
       </code></pre>
 
       <p>
@@ -465,7 +446,7 @@ while true; do curl -X POST https://beta.patchbay.pub/apps/simple_chat/chat.js -
       </p>
 
       <pre><code class='bash'>
-https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>/
+https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>/
       </code></pre>
 
       <p>
@@ -485,15 +466,25 @@ https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       </p>
 
       <pre><code class='bash'>
-patchbay-cli host https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> ./dir/to/host
+patchbay-cli host https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> ./dir/to/host
       </code></pre>
 
       <h2 id='serverless'>Poor man's serverless</h2>
 
       <p>
+        MPMC is an elegant and useful tool, but it has some fundamental
+        weaknesses. The most important is that consumers can only consume, and
+        producers can only produce. It doesn't allow you to model a full
+        client/server, request/response architecture, because consumers can't
+        upload anything, and producers can't change their response based on
+        the client's parameters. In order to handle these more complicated
+        scenarios, patchbay implements a third protocol, called
+        requester/responder or reqres for short.
+      </p>
 
-        Remember how I said requester/responder is more powerful than
-        producer/consumer? Time to prove it. Take a gander at the following
+      <p>
+
+        Take a gander at the following
         <a target='_blank' href='https://durian.blender.org/'>Sintel</a>
         video, which is being served over patchbay:
 
@@ -514,12 +505,12 @@ patchbay-cli host https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-
         big file". The browser then requests the file chunks around wherever
         you currently are in the video. This is done using HTTP headers. How
         patchbay does this is beyond the scope of this intro. It requires a bit
-        more work when implementing the responder, but it's seamless for the
-        requester, ie your browser. It just requests the file segments as it
-        normally would.
+        more work when implementing the responder (though it's a lot simpler
+        than you might imagine), but it's seamless for the requester, ie your
+        browser. It just requests the file segments as it normally would.
 
-        When all is said and done, almost anything you can do with a normal
-        server, you can do with patchbay.
+        When all is said and done, anything you can do with a normal server,
+        you can do with patchbay.
       </p>
 
       <p>
@@ -537,6 +528,7 @@ patchbay-cli host https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-
         long as you keep this tab of your browser open, you can share that link
         with friends and they can stream the video.
       </p>
+
 
       <h2 id='file-sharing'>Poor man's file sharing</h2>
 
@@ -586,21 +578,20 @@ patchbay-cli host https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-
         </li>
         <li>
           Due to the way TCP works, it can be tricky to detect when an HTTP
-          client has disconnected. So if you connect a responder and then
+          client has disconnected. So if you connect a producer and then
           cancel it, the server might keep it around for a while before
-          cleaning it up, and a requester might grab the stale/partial data.
+          cleaning it up, and a consumer might grab the stale/partial data.
           The simplest way to handle these situations is to flush it manually
-          by attaching a requester as soon as you cancel the responder. Note
-          that this all applies (in reverse) to stale requesters as well.
+          by attaching a consumer as soon as you cancel the producer.
         </li>
         <li>
           In general, your code needs to assume the connection can fail at any
           time without having transferred any data. Additionally, even if some
-          or all of a request body is read from the request, that doesn't
-          guarantee it's been delivered to the other end. It might just be in
-          an OS buffer. That said, the server should never close a connection
-          until the other side has attached and all data has been read, unless
-          it needs to clean up idle connections.
+          or all of a producer body is read from the request, that doesn't
+          guarantee it's been delivered to a consumer. It might just be in an
+          OS buffer. That said, the server should never close a producer
+          connection until a consumer has attached and all data has been read
+          from the producer.
         </li>
       </ul>
 
@@ -640,7 +631,7 @@ patchbay-cli host https://beta.patchbay.pub/<span class='channel'>aa7cc811-d21c-
 
         const historyLength = 200;
         //const channel = 'http://localhost:9001/pubchat';
-        const channel = 'https://beta.patchbay.pub/pubchat';
+        const channel = 'https://patchbay.pub/pubchat';
 
         const chatContainerEl = document.querySelector('.chat-container');
         const chatEl = ChatComponent(channel, historyLength);
