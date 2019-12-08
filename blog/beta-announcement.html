@@ -6,6 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>patchbay - Poor Man's Web</title>
+    <link rel="stylesheet"
+          href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/atelier-sulphurpool-dark.min.css">
     <!-- tuplate_end() -->
 
     <link rel="stylesheet" type="text/css" href="../styles.css">
@@ -15,15 +17,66 @@
 
     <div class='content'>
 
-    <!-- tuplate_start(header_level2.html) -->
-    <header>
-      <nav>
-        <a href='../'>Home</a>
-        <a href='../blog/'>Blog</a>
-      </nav>
-    </header>
-    <!-- tuplate_end() -->
+      <!-- tuplate_start(header_level2.html) -->
+      <header>
+        <nav>
+          <a href='../'>Home</a>
+          <a href='../blog/'>Blog</a>
+        </nav>
+      </header>
+      <!-- tuplate_end() -->
+
+      <h1>TL;DR</h1>
+
+      The patchbay API is changing a bit, but also stabilizing to 1.0, in order
+      to add exciting new features. patchbay is currently running in
+      compatibility mode. One week from today, we're flipping the switch. Between
+      now and then, you'll need to change any MPMC (ie non-pubsub) requests to
+      use the patchbay.pub/queue/ base route. pubsub=true will continue to work,
+      but is considered deprecated and will be removed in the future. It is
+      recommended to switch to patchbay.pub/pubsub/ as soon as possible.
+
+      <h1>Introduction</h1>
+      <p>
+        When patchbay
+        <a target='_blank' href='./introducing-patchbay.html'>launched</a>
+        a couple weeks ago, it was a cool idea, and even
+        provided some useful primitives for connecting things over the web.
+        However, the API was a bit hacky, and the system was missing some key
+        functionality that kept it reaching its true potential.
+      </p>
+
+      <p>
+        Today we're announcing patchbay 1.0. This represents a stabilization and
+        normalization of the API, and exciting new features, without removing
+        the simplicity and elegance that makes patchbay appealing in the first
+        place. Before we discuss the specifics of what is changing, I want to
+        walk through a motivating example.
+      </p>
+
+      <p>
+        The most interesting example when patchbay was launched was the ability
+        to host a static web site using nothing but bash. It looks something like
+        this:
+      </p>
+
+      <pre><code class='bash'>
+https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+      </code></pre>
 
     </div>
+
+    <!-- tuplate_start(js_includes.html) -->
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
+    <!-- tuplate_end() -->
+
+    <script type='module'>
+
+      import { setRandomChannels } from '../utils.js';
+
+      setRandomChannels();
+      hljs.initHighlightingOnLoad();
+
+    </script>
   </body>
 </html>

@@ -6,11 +6,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>patchbay - Poor Man's Web</title>
+    <link rel="stylesheet"
+          href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/atelier-sulphurpool-dark.min.css">
     <!-- tuplate_end() -->
     <link rel="stylesheet" type="text/css" href="./styles.css">
     <link rel="stylesheet" type="text/css" href="./apps/simple_chat/chat.css">
-    <link rel="stylesheet"
-          href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/atelier-sulphurpool-dark.min.css">
   </head>
 
   <body>
@@ -632,42 +632,18 @@ patchbay-cli host https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-
     <script type='module'>
 
       import ChatComponent from './apps/simple_chat/chat.js';
+      import { setRandomChannels } from './utils.js';
 
-      (async () => {
+      const historyLength = 200;
+      //const channel = 'http://localhost:9001/pubchat';
+      const channel = 'https://patchbay.pub/pubchat';
 
-        const historyLength = 200;
-        //const channel = 'http://localhost:9001/pubchat';
-        const channel = 'https://patchbay.pub/pubchat';
+      const chatContainerEl = document.querySelector('.chat-container');
+      const chatEl = ChatComponent(channel, historyLength);
+      chatContainerEl.appendChild(chatEl);
 
-        const chatContainerEl = document.querySelector('.chat-container');
-        const chatEl = ChatComponent(channel, historyLength);
-        chatContainerEl.appendChild(chatEl);
-
-        const ids = document.querySelectorAll('.channel');
-        const randId = genId();
-        ids.forEach(el => el.innerText = randId);
-        hljs.initHighlightingOnLoad();
-      })();
-
-      function genId() {
-        const possible = "0123456789abcdefghijkmnpqrstuvwxyz";
-
-        function genCluster() {
-          let cluster = "";
-          for (let i = 0; i < 4; i++) {
-            const randIndex = Math.floor(Math.random() * possible.length);
-            cluster += possible[randIndex];
-          }
-          return cluster;
-        }
-
-        let id = "";
-        id += genCluster();
-        id += '-';
-        id += genCluster();
-        return id;
-      }
-
+      setRandomChannels();
+      hljs.initHighlightingOnLoad();
 
     </script>
 
