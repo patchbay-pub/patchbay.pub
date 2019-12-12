@@ -19,22 +19,13 @@
 
       <!-- tuplate_start(header_level2.html) -->
       <header>
-        <nav>
-          <a href='../'>Home</a>
-          <a href='../blog/'>Blog</a>
+        <nav class='navbar'>
+          <a class='navbar__link' href='../index.html'>Home</a>
+          <a class='navbar__link' href='../docs.html'>Docs</a>
+          <a class='navbar__link' href='../blog/index.html'>Blog</a>
         </nav>
       </header>
       <!-- tuplate_end() -->
-
-      <h1>TL;DR</h1>
-
-      The patchbay API is changing a bit, but also stabilizing to 1.0, in order
-      to add exciting new features. patchbay is currently running in
-      compatibility mode. One week from today, we're flipping the switch. Between
-      now and then, you'll need to change any MPMC (ie non-pubsub) requests to
-      use the patchbay.pub/queue/ base route. pubsub=true will continue to work,
-      but is considered deprecated and will be removed in the future. It is
-      recommended to switch to patchbay.pub/pubsub/ as soon as possible.
 
       <h1>Introduction</h1>
       <p>
@@ -43,27 +34,166 @@
         a couple weeks ago, it was a cool idea, and even
         provided some useful primitives for connecting things over the web.
         However, the API was a bit hacky, and the system was missing some key
-        functionality that kept it reaching its true potential.
+        functionality that kept it from reaching its true potential.
       </p>
 
       <p>
         Today we're announcing patchbay 1.0. This represents a stabilization and
         normalization of the API, and exciting new features, without removing
         the simplicity and elegance that makes patchbay appealing in the first
-        place. Before we discuss the specifics of what is changing, I want to
-        walk through a motivating example.
+        place.
       </p>
 
+      <h1>What's new?</h1>
+
       <p>
-        The most interesting example when patchbay was launched was the ability
-        to host a static web site using nothing but bash. It looks something like
-        this:
+        The most interesting example at launch was the ability to host a static
+        web site using nothing but bash. It looks something like this:
       </p>
 
       <pre><code class='bash'>
-https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+while true; do curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> --data-binary ./index.html; done
       </code></pre>
 
+      <p>
+        What that does is create a producer in a loop. Consumers (such as a web
+        browser) can come along and attach to the
+        https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+        channel with GET requests and receive the web page. This essentially
+        lets you host static websites from your laptop, which is great for
+        quickly sharing prototypes etc. However, there are a couple big
+        limitations. What if you wanted to host a site with thousands of
+        photos? You would have to run thousands of instance of that bash loop.
+        At least one worker for each file. It's true that you can easily make
+        a tool such as
+        <a target='_blank' href='https://github.com/patchbay-pub/patchbay'>patchbay-cli</a>
+        to automate this process, but that's still way too many open TCP
+        connections. Also consider what if you wanted to be able to
+        <em>upload</em> images? This is impossible with the original patchbay
+        because consumers can only consume, and producers can only produce.
+        What we really need is to decouple consumers from GET requests, and
+        make it possible for them to also POST/PUT/DELETE/etc. We also need a
+        way to pass the consumer's request data (HTTP headers, query
+        parameters, etc) to the producer. As you've likely guessed, this is
+        exactly what we're launching today.
+      </p>
+
+      <p>
+        patchbay up until now has supported 2 "protocols": pubsub and
+        multi-producer/multi-consumer (MPMC) queues. The default was MPMC, and
+        adding pubsub=true would switch to pubsub. Today we're adding 2
+        additional protocols: requester and responder. Rather than using query
+        parameters, these new protocols are accessed using "protocol routes",
+        like this:
+      </p>
+
+      <pre><code class='bash'>
+# Requester
+curl https://patchbay.pub/req/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+# Responder
+curl https://patchbay.pub/res/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+      </code></pre>
+
+      <p>
+        Splitting into 2 distinct protocols like this enables us to GET/POST
+        with both requesters and responders. This essentially makes patchbay
+        capable of doing anything a normal webserver can do. Now some examples.
+      </p>
+
+
+
+      <p>
+        Take a gander at the following
+        <a target='_blank' href='https://durian.blender.org/'>Sintel</a>
+        video, which is being served over patchbay:
+
+        <div class='video-container'>
+          <video controls>
+            <source src="https://patchbay.pub/req/videos/sintel-2048-surround.mp4" type="video/mp4">
+            <!--
+            <source src="https://patchbay.pub/videos/sintel-2048-surround.mp4" type="video/mp4">
+            <source src="http://patchbay.pub:9003/videos/sintel-2048-surround.mp4" type="video/mp4">
+            <source src="http://localhost:9001/videos/sintel-2048-surround.mp4" type="video/mp4">
+            -->
+            Sorry, your browser doesn't support embedded videos.
+          </video>
+        </div>
+
+        Now observe that seeking to specific points in the video works just
+        fine.  If you're not familiar with HTTP streaming, this is accomplished
+        using
+        <a target='_blank' href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests'>HTTP range requests</a>,
+        which are basically just a way for an HTTP client (your browser) to say
+        to the server, "Hey, I only need these specific bytes from this really
+        big file". The browser then requests the file chunks around wherever
+        you currently are in the video. This is done using HTTP headers. How
+        patchbay does this is beyond the scope of this intro, but you can
+        check out the
+        <a target='_blank' href='../docs.html'>docs</a>
+        for more details.
+
+        It requires a bit more work when implementing the responder (though
+        it's a lot simpler than you might imagine), but it's seamless for the
+        requester, ie your browser. It just requests the file segments as it
+        normally would.
+
+        When all is said and done, anything you can do with a normal server,
+        you can do with patchbay.
+      </p>
+
+      <h1>Breaking Changes</h1>
+
+      <p>
+        As of right now, patchbay supports the same API it did at launch. The
+        root path / still defaults to MPMC, and pubsub=true still switches to
+        the pubsub protocol. If you want to play with the new features, you
+        need to use the /req/ and /res/ protocols.
+      </p>
+
+      <p>
+        In order to make things more consistent and explicit, we've also added
+        the /queue/ (for MPMC) and /pubsub/ protocol routes.
+      </p>
+
+      <p>
+        We think it makes more sense for the root path to default to the /req/
+        protocol, because it's the most generic and powerful, and the URLs
+        that are most likely to be shared. For example, if you wanted to
+        share the video above, the link would be
+
+        <a target='_blank' href='https://patchbay.pub/req/videos/sintel-2048-surround.mp4'>https://patchbay.pub/req/videos/sintel-2048-surround.mp4</a>.
+
+        Having the /req/ in there is kind of ugly.
+
+      </p>
+
+      <p class='emphasized'>
+        With this in mind, on January 1st,
+        2020, we're going to change the root path to default to /req/, instead
+        of /queue/.
+      </p>
+
+      <p>
+        In order to migrate current API calls, if you have a request like this:
+      </p>
+
+      <pre><code class='bash'>
+curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+      </code></pre>
+
+      <p>
+        You need to change it to look like this:
+      </p>
+
+      <pre><code class='bash'>
+curl https://patchbay.pub/queue/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+      </code></pre>
+
+      <p>
+        We apologize for the inconvenience. The good news is that as of
+        1 Jan 2020 the API will be considered 1.0, and no more breaking
+        changes will be introduced without bumbing the API version.
+      </p>
     </div>
 
     <!-- tuplate_start(js_includes.html) -->
