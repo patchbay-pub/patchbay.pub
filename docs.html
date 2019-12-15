@@ -159,7 +159,7 @@ curl https://patchbay.pub/mpmc/<span class='channel'>acgt1234</span> -d "Hi ther
 curl https://patchbay.pub/mpmc/<span class='channel'>acgt1234</span>
       </code></pre>
 
-      <h2>Requester/Responder</h2>
+      <h2 id='reqres'>Requester/Responder</h2>
 
       <p>
         Requester/Responder (req/res) is where the full power of patchbay is
@@ -251,7 +251,7 @@ curl https://patchbay.pub/res/<span class='channel'>acgt1234</span> -v -d "Thank
         You may already see the problem. By the time curl prints out those
         headers, the responder has already exited and the connection with the
         requester is gone forever, so there's no way to use the information.
-        In order to get around this, we use a technique I call
+        In order to get around this, we use a technique we call
         <a target="_blank" href="https://en.wikipedia.org/wiki/Double_clutch_(technique)">"double clutch"</a>
         requests. It works because patchbay implements a responder query
         param switch=true. If set, rather than connecting the responder
