@@ -41,8 +41,9 @@ pre {
 }
 
 .remfs-container {
-  height: 400px;
+  height: 300px;
   overflow-y: scroll;
+  border: 2px solid #777;
 }
 
 video {

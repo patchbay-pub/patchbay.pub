@@ -110,7 +110,16 @@ curl https://patchbay.pub/res/<span class='channel'>aa7cc811-d21c-42ef-92cc-a556
       <div class='remfs-container'></div>
 
       <p>
-        Take a gander at the following
+        Even though there are quite a few photos, those are all being hosted
+        using just a small number of shared connections to patchbay. This works
+        because rather than using absolute paths like MPMC, request/response
+        separates the concepts of channels and paths, so the responder is
+        provided with the request path and can find the appropriate file at
+        request time.
+      </p>
+
+      <p>
+        Next, take a gander at the following
         <a target='_blank' href='https://durian.blender.org/'>Sintel</a>
         video, which is being served over patchbay:
 
@@ -163,7 +172,7 @@ curl https://patchbay.pub/res/<span class='channel'>aa7cc811-d21c-42ef-92cc-a556
         that are most likely to be shared. For example, if you wanted to
         share the video above, the link would be
 
-        <a target='_blank' href='https://patchbay.pub/req/videos/sintel-2048-surround.mp4'>https://patchbay.pub/req/videos/sintel-2048-surround.mp4</a>.
+        <a target='_blank' href='https://patchbay.pub/req/stage/files/videos/sintel-2048-surround.mp4'>https://patchbay.pub/req/stage/videos/sintel-2048-surround.mp4</a>.
 
         Having the /req/ in there is kind of ugly.
 
@@ -194,7 +203,7 @@ curl https://patchbay.pub/queue/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5
       <p>
         We apologize for the inconvenience. The good news is that as of
         1 Jan 2020 the API will be considered 1.0, and no more breaking
-        changes will be introduced without bumbing the API version.
+        changes will be introduced without bumping the API version.
       </p>
     </div>
 
