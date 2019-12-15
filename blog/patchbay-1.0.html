@@ -11,6 +11,7 @@
     <!-- tuplate_end() -->
 
     <link rel="stylesheet" type="text/css" href="../styles.css">
+    <link rel="stylesheet" type="text/css" href="../apps/delver/styles.css">
   </head>
 
   <body>
@@ -101,6 +102,12 @@ curl https://patchbay.pub/res/<span class='channel'>aa7cc811-d21c-42ef-92cc-a556
       </p>
 
 
+      <p>
+        First, consider the case of hosting a large collection of images.
+        Check this out:
+      </p>
+
+      <div class='remfs-container'></div>
 
       <p>
         Take a gander at the following
@@ -195,12 +202,22 @@ curl https://patchbay.pub/queue/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5
     <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
     <!-- tuplate_end() -->
 
+
+    <script src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons.js"></script>
+
     <script type='module'>
 
       import { setRandomChannels } from '../utils.js';
+      import { RemFSDelver } from '../apps/delver/index.js';
 
       setRandomChannels();
       hljs.initHighlightingOnLoad();
+
+
+      const delverEl = RemFSDelver({
+        rootUrl: 'https://patchbay.pub/req/stage/files/images',
+      });
+      document.querySelector('.remfs-container').appendChild(delverEl);
 
     </script>
   </body>

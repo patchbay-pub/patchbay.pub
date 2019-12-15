@@ -40,6 +40,11 @@ pre {
   margin-bottom: 20px;
 }
 
+.remfs-container {
+  height: 400px;
+  overflow-y: scroll;
+}
+
 video {
   width: 100%;
 }
