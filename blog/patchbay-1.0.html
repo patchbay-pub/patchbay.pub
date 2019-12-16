@@ -75,8 +75,8 @@ while true; do curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42e
         What we really need is to decouple consumers from GET requests, and
         make it possible for them to also POST/PUT/DELETE/etc. We also need a
         way to pass the consumer's request data (HTTP headers, query
-        parameters, etc) to the producer. As you've likely guessed, this is
-        exactly what we're launching today.
+        parameters, etc) to the producer. These features are exactly what we're
+        launching today.
       </p>
 
       <p>
@@ -98,24 +98,35 @@ curl https://patchbay.pub/res/<span class='channel'>aa7cc811-d21c-42ef-92cc-a556
       <p>
         Splitting into 2 distinct protocols like this enables us to GET/POST
         with both requesters and responders. This essentially makes patchbay
-        capable of doing anything a normal webserver can do. Now some examples.
+        capable of doing anything a normal webserver can do.
+
       </p>
 
+      <h2>Demos</h2>
 
       <p>
-        First, consider the case of hosting a large collection of images.
-        Check this out:
+        Now some demos.  Note that I'm not going to explain here the details
+        of how these would be made.  They require a bit more work when
+        implementing the responder (though it's a lot simpler than you might
+        imagine), but it's seamless for the requester, ie your browser.  Refer
+        to 
+        <a target='_blank' href='../docs.html#reqres'>the docs</a>
+        for more information.
+      </p>
+
+      <p>
+        First, consider the case of hosting a large collection of images. Here
+        are some photos from Kenya and Colorado:
       </p>
 
       <div class='remfs-container'></div>
 
       <p>
         Even though there are quite a few photos, those are all being hosted
-        using just a small number of shared connections to patchbay. This works
-        because rather than using absolute paths like MPMC, request/response
-        separates the concepts of channels and paths, so the responder is
-        provided with the request path and can find the appropriate file at
-        request time.
+        using just a small number of shared connections to patchbay. This
+        can easily scale to thousands of files (though that would require
+        fancier code on the frontend to avoid having too many DOM elements
+        loaded at once).
       </p>
 
       <p>
@@ -130,26 +141,20 @@ curl https://patchbay.pub/res/<span class='channel'>aa7cc811-d21c-42ef-92cc-a556
           </video>
         </div>
 
-        Now observe that seeking to specific points in the video works just
+        Observe that seeking to specific points in the video works just
         fine.  If you're not familiar with HTTP streaming, this is accomplished
         using
         <a target='_blank' href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests'>HTTP range requests</a>,
         which are basically just a way for an HTTP client (your browser) to say
         to the server, "Hey, I only need these specific bytes from this really
         big file". The browser then requests the file chunks around wherever
-        you currently are in the video. This is done using HTTP headers. How
-        patchbay does this is beyond the scope of this intro, but you can
-        check out the
-        <a target='_blank' href='../docs.html#reqres'>docs</a>
-        for more details.
+        you currently are in the video. This is done using HTTP headers.
 
-        It requires a bit more work when implementing the responder (though
-        it's a lot simpler than you might imagine), but it's seamless for the
-        requester, ie your browser. It just requests the file segments as it
-        normally would.
+      </p>
 
-        When all is said and done, anything you can do with a normal server,
-        you can do with patchbay.
+      <p>
+        The implications of these brief examples is that anything you can do
+        with a normal server, you can do with patchbay.
       </p>
 
       <h1>Breaking Changes</h1>
