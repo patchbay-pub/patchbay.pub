@@ -23,7 +23,7 @@ const ChatComponent = (channel, historyLength) => {
   messageList.classList.add('message-list');
   chatEl.appendChild(messageList);
 
-  const evtSource = new EventSource(channel + "?mime=text%2Fevent-stream&pubsub=true&persist=true");
+  const evtSource = new EventSource(channel + "?mime=text%2Fevent-stream&persist=true");
   evtSource.onmessage = function(event) {
     console.log(event.data);
     const message = JSON.parse(event.data);
@@ -65,7 +65,7 @@ const ChatComponent = (channel, historyLength) => {
       text: textInput.value,
     });
 
-    const response = await fetch(channel + '?pubsub=true', {
+    const response = await fetch(channel, {
       method: 'POST',
       body: `data: ${message}\n\n`,
     });

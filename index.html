@@ -133,15 +133,19 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       </p>
 
       <p>
-        If you set the <code>pubsub=true</code> query parameter, like this:
+        If you use the <code>/pubsub/</code> protocol, like this:
       </p>
 
       <pre><code class='bash'>
-curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true -d "Hi there"
+curl https://patchbay.pub/pubsub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
+      </code></pre>
+
+      <pre><code class='bash'>
+curl https://patchbay.pub/pubsub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span> -d "Hi there"
       </code></pre>
 
       <p>
-        the request uses the channel in a different mode. GETs act similar to
+        the request uses the channel in a different mode. GETs act similarly to
         before, but POSTs become non-blocking, and will broadcast messages to
         all blocked pubsub consumers, not just the first one. As the name
         suggest, this models the
@@ -163,7 +167,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       </p>
 
       <pre><code class='bash'>
-./longjob.sh; curl -X POST https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true
+./longjob.sh; curl -X POST https://patchbay.pub/pubsub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>
       </code></pre>
 
       <p>
@@ -173,7 +177,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
       </p>
 
       <pre><code class='bash'>
-curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true; notify-send "Job done"
+curl https://patchbay.pub/pubsub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>; notify-send "Job done"
       </code></pre>
 
       <p>
@@ -192,7 +196,7 @@ curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa3
 while true
 do
     # Run curl in a subshell and pass the results to notify-send
-    notify-send $(curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true)
+    notify-send $(curl https://patchbay.pub/pubsub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>)
 
     # Avoid too many requests if server is down or rejecting
     if [ "$?" -ne "0" ]; then
@@ -208,7 +212,7 @@ done
       </p>
 
       <pre><code class='bash'>
-curl "https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true&method=post&body=Job%20Done"
+curl "https://patchbay.pub/pubsub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>method=post&body=Job%20Done"
       </code></pre>
 
       <p>
@@ -234,7 +238,7 @@ curl "https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa
       </p>
 
       <pre><code class='bash'>
-twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true)
+twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body $(curl https://patchbay.pub/pubsub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>)
       </code></pre>
 
       <p>
@@ -250,7 +254,7 @@ twilio api:core:messages:create --from "+15017122661" --to "+15558675310" --body
       <em>send</em> a text to my Twilio number and have it trigger some other
       event? This is easily done by logging in to the Twilio website and
       pointing the SMS webhook to 
-      <code>https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span>?pubsub=true</code>.
+      <code>https://patchbay.pub/pubsub/<span class='channel'>aa7cc811-d21c-42ef-92cc-a5566fa38344</span></code>.
 
       Any texts to my number will now trigger a pubsub event on the same
       channel as before. I can use whatever command line tools I want to
@@ -287,7 +291,7 @@ const message = JSON.stringify({
   text: "Hi there",
 });
 
-fetch('https://patchbay.pub/pubchat?pubsub=true', {
+fetch('https://patchbay.pub/pubsub/pubchat', {
   method: 'POST',
   body: `data: ${message}\n\n`,
 });
@@ -295,7 +299,7 @@ fetch('https://patchbay.pub/pubchat?pubsub=true', {
 
 // Receive messages:
 
-const evtSource = new EventSource("https://patchbay.pub/pubchat?mime=text%2Fevent-stream&pubsub=true&persist=true");
+const evtSource = new EventSource("https://patchbay.pub/pubsub/pubchat?mime=text%2Fevent-stream&persist=true");
 evtSource.onmessage = function(event) {
   console.log(event.data);
 }
@@ -316,7 +320,7 @@ evtSource.onmessage = function(event) {
       </p>
 
       <pre><code class='bash'>
-printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl https://patchbay.pub/pubchat?pubsub=true --data-binary @-
+printf 'data: {"author": "Curly Jefferson", "text": "Hi there"}\n\n' | curl https://patchbay.pub/pubsub/pubchat --data-binary @-
       </code></pre>
 
       <p>
@@ -637,7 +641,7 @@ patchbay-cli host https://patchbay.pub/<span class='channel'>aa7cc811-d21c-42ef-
 
       const historyLength = 200;
       //const channel = 'http://localhost:9001/pubchat';
-      const channel = 'https://patchbay.pub/pubchat';
+      const channel = 'https://patchbay.pub/pubsub/pubchat';
 
       const chatContainerEl = document.querySelector('.chat-container');
       const chatEl = ChatComponent(channel, historyLength);
