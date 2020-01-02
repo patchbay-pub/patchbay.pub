@@ -1,0 +1,138 @@
+<html>
+  <head>
+    <!-- tuplate_start(head.html) -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>patchbay - Poor Man's Web</title>
+    <link rel="stylesheet"
+          href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/atelier-sulphurpool-dark.min.css">
+    <!-- tuplate_end() -->
+
+    <link rel="stylesheet" type="text/css" href="../styles.css">
+
+  </head>
+
+  <body>
+
+    <div class='content'>
+
+      <!-- tuplate_start(header_level2.html) -->
+      <header>
+        <nav class='navbar'>
+          <a class='navbar__link' href='../index.html'>Home</a>
+          <a class='navbar__link' href='../docs/index.html'>Docs</a>
+          <a class='navbar__link' href='../blog/index.html'>Blog</a>
+          <a class='navbar__link' href='../pro.html'>Pro</a>
+        </nav>
+      </header>
+      <!-- tuplate_end() -->
+
+      <p>
+        Note: the features on this page are only available to
+        <a href='../pro.html'>patchbay pro</a> subscribers.
+      </p>
+
+      <h1>Getting a token</h1>
+
+      <p>
+        After successfully subscribing to patchbay pro, the next step is
+        to get a token for your email address. This is easily done with a curl
+        request. If I wanted a token for info@patchbay.pub, I would make the
+        following request:
+      </p>
+
+      <pre><code class='bash'>
+curl 'https://patchbay.pub/auth?method=createToken&email=info@patchbay.pub'
+      </code></pre>
+
+      <p>
+        You will receive a verification email at the specified address. Once
+        you click on the link in that email, the curl command will return with
+        an auth token. Use that token as the value for the pb-token query
+        parameter in the requests below. For the sake of example, we'll
+        pretend the returned token was acgt1234.
+      </p>
+
+      <p>
+        You can create additional tokens as needed. When used in patchbay
+        requests, the tokens unlock the patchbay pro features.
+      </p>
+
+      <h1>Reserving a channel</h1>
+
+      <p>
+        The next step is to reserve your private channel. This can also be done
+        with a curl request. As an example, assume I want to reserve the
+        channel name "anders". I would make the following request:
+      </p>
+
+      <pre><code class='bash'>
+curl 'https://patchbay.pub/pro/reserve-channel?channel-name=anders&pb-token=acgt1234'
+      </code></pre>
+
+      <p>
+        You can now make authenticated requests to this channel. For example,
+        you could host a web page like this:
+      </p>
+
+      <pre><code class='bash'>
+while true; do curl 'https://patchbay.pub/queue/anders/index.html?&pb-token=acgt1234' --data-binary @index.html; done
+      </code></pre>
+
+      <p>
+        Only users with valid tokens can read/write to that endpoint. A common
+        pattern is to make endpoints open publicly for reading, but reserve
+        writing for the owner. This allows you to host public websites.
+      </p>
+
+
+      <h1>Permissions</h1>
+
+      <p>
+        patchbay uses a simple authorization system, based on paths. By
+        default, every path is open to both reading and writing by anyone.
+        Each path has 4 lists of permissions: Readers, Writers, Managers, and
+        Owners. Readers can perform only GET requests. Writers can perform
+        all requests. Managers can change Readers and Writers. Owners can
+        change Managers. When you registered your patchbay pro account, you
+        were added as an Owner over your reserved channel. This locked it
+        down so that only you can control the permissions.
+      </p>
+
+      <p>
+        Adding/removing permissions is very simple. As always, it can be done
+        using curl, in this case via the /auth/ protocol.
+      </p>
+
+      <p>
+        To add a reader:
+      </p>
+
+      <pre><code class='bash'>
+curl 'https://patchbay.pub/auth/anders?&method=addReader&email=info@patchbay.pub&pb-token=acgt1234'
+      </code></pre>
+
+      <p>
+        To remove a reader:
+      </p>
+
+      <pre><code class='bash'>
+curl 'https://patchbay.pub/auth/anders?&method=removeReader&email=info@patchbay.pub&pb-token=acgt1234'
+      </code></pre>
+
+      <p>
+        The pattern is exactly the same for addWriter, removeWriter,
+        addManager, removeManager, addOwner, and removeOwner.
+      </p>
+
+    </div>
+
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
+    <script type='module'>
+      import { setRandomChannels } from '../utils.js';
+
+      setRandomChannels();
+      hljs.initHighlightingOnLoad();
+    </script>
+  </body>
+</html>
